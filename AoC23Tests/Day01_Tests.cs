@@ -78,6 +78,23 @@ namespace AoC23Tests
             var result = reader.ParseCalibrationWithLetters(input);
             Assert.AreEqual(expected, result);
         }
+
+        [DataTestMethod]
+        [DataRow("two1nine", 29)]
+        [DataRow("eightwothree", 83)]
+        [DataRow("abcone2threexyz", 13)]
+        [DataRow("xtwone3four", 24)]
+        [DataRow("4nineeightseven2", 42)]
+        [DataRow("zoneight234", 14)]
+        [DataRow("7pqrstsixteen", 76)]
+        public void First_and_Last_SmpleInput_Letters(string input, int expected)
+        {
+            var reader = new CalibrationReader();
+            var result = reader.ParseCalibrationWithLetters(input);
+            Assert.AreEqual(expected, result);
+        }
+
+
     }
 
 
