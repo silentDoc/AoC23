@@ -8,7 +8,11 @@
             => input.ForEach(calibrations.Add);
 
         public int ParseCalibration(string calibration)
-            => 0;
+        {
+            var digits = calibration.ToCharArray().Where(x => char.IsDigit(x)).ToList();
+            return int.Parse(digits.First().ToString() + digits.Last().ToString());
+        }
+        
 
         private string SolvePart1()
             => calibrations.Select( c => ParseCalibration(c)).Sum().ToString();

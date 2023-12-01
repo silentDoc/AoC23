@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using AoC23.Day01;
+using System.Diagnostics;
 
 namespace AoC23
 {
@@ -30,7 +31,10 @@ namespace AoC23
         static string day1(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
-            return "";
+            CalibrationReader reader = new();
+            reader.ParseInput(lines);
+
+            return reader.Solve(part);
         }
     }
 }
