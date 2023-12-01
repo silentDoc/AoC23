@@ -41,6 +41,43 @@ namespace AoC23Tests
             var result = reader.ParseCalibration(input);
             Assert.AreEqual(expected, result);
         }
+
+        [DataTestMethod]
+        [DataRow("1abc2three", 13)]
+        [DataRow("fivefv1abc2ffffnine", 59)]
+        [DataRow("3ghjg5ghfourjghjg", 34)]
+        [DataRow("twokjhkjhkjh6mnvmnv4", 24)]
+        public void First_and_Last_2Digits_Letters(string input, int expected)
+        {
+            var reader = new CalibrationReader();
+            var result = reader.ParseCalibrationWithLetters(input);
+            Assert.AreEqual(expected, result);
+        }
+
+
+        [DataTestMethod]
+        [DataRow("1abc2three", 13)]
+        [DataRow("fivefv1abc2ffffnine", 59)]
+        [DataRow("3ghjg5ghfourjghjg", 34)]
+        [DataRow("twokjhkjhkjh6mnvmnv4", 24)]
+        public void First_and_Last_MoreThan2Digits_Letters(string input, int expected)
+        {
+            var reader = new CalibrationReader();
+            var result = reader.ParseCalibrationWithLetters(input);
+            Assert.AreEqual(expected, result);
+        }
+
+
+        [DataTestMethod]
+        [DataRow("trebsevenuchet", 77)]
+        [DataRow("fourhjkhkjh", 44)]
+        [DataRow("ghjgghjghjgeight", 88)]
+        public void First_and_Last_Only1Digit_Letters(string input, int expected)
+        {
+            var reader = new CalibrationReader();
+            var result = reader.ParseCalibrationWithLetters(input);
+            Assert.AreEqual(expected, result);
+        }
     }
 
 

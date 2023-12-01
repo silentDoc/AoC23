@@ -12,7 +12,12 @@
             var digits = calibration.ToCharArray().Where(x => char.IsDigit(x)).ToList();
             return int.Parse(digits.First().ToString() + digits.Last().ToString());
         }
-        
+
+        public int ParseCalibrationWithLetters(string calibration)
+        {
+            return 0;
+        }
+
 
         private string SolvePart1()
             => calibrations.Select( c => ParseCalibration(c)).Sum().ToString();
