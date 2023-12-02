@@ -1,6 +1,4 @@
-﻿using System.Xml.Schema;
-
-namespace AoC23.Day02
+﻿namespace AoC23.Day02
 {
     public record HandOfGame
     {
@@ -13,6 +11,8 @@ namespace AoC23.Day02
     {
         List<(int id, List<HandOfGame> game)> allGames = new();
 
+        public void ParseInput(List<string> input)
+            => input.ForEach(x => allGames.Add(ParseGame(x)));
 
         public (int id, List<HandOfGame> game) ParseGame(string line) 
         {
@@ -34,7 +34,7 @@ namespace AoC23.Day02
                     else if (v.Contains("blue"))
                         hand.Blue = int.Parse(v.Replace(" blue", ""));
                     else if (v.Contains("green"))
-                        hand.Red = int.Parse(v.Replace(" green", ""));
+                        hand.Green = int.Parse(v.Replace(" green", ""));
 
                 }
                 allhands.Add(hand);
@@ -44,8 +44,22 @@ namespace AoC23.Day02
         }
 
         public bool CheckPossibleGame(List<HandOfGame> game, HandOfGame limit)
+            => !(game.Any(x => x.Red > limit.Red) ||
+                 game.Any(x => x.Blue > limit.Blue) ||
+                 game.Any(x => x.Green > limit.Green));
+
+
+        int SolvePart1()
         {
-            return false;
+            HandOfGame limit = new();
+            limit.Red = 12;
+            limit.Green = 13;
+            limit.Blue = 14;
+
+            return allGames.Where(x => CheckPossibleGame(x.game, limit)).Sum(g => g.id);
         }
+
+        public string Solve(int part)
+            => part == 1 ? SolvePart1().ToString() : "";
     }
 }

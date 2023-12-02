@@ -1,4 +1,5 @@
 ﻿using AoC23.Day01;
+using AoC23.Day02;
 using System.Diagnostics;
 
 namespace AoC23
@@ -7,8 +8,8 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 1;
-            int part = 2;
+            int day = 2;
+            int part = 1;
             bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
@@ -19,7 +20,8 @@ namespace AoC23
             st.Start();
             string result = day switch
             {
-                1 => day1(input, part).ToString(),
+                1 => day1(input, part),
+                2 => day2(input, part),
                 _ => throw new ArgumentException("Wrong day number - unimplemented")
             };
             
@@ -40,8 +42,10 @@ namespace AoC23
         static string day2(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
+            CubeBagGame engine = new();
+            engine.ParseInput(lines);
 
-            return "";
+            return engine.Solve(part);
         }
     }
 }
