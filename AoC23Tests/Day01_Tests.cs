@@ -50,7 +50,7 @@ namespace AoC23Tests
         public void First_and_Last_2Digits_Letters(string input, int expected)
         {
             var reader = new CalibrationReader();
-            var result = reader.ParseCalibrationWithLetters(input);
+            var result = reader.ParseCalibration(input, true);
             Assert.AreEqual(expected, result);
         }
 
@@ -63,7 +63,7 @@ namespace AoC23Tests
         public void First_and_Last_MoreThan2Digits_Letters(string input, int expected)
         {
             var reader = new CalibrationReader();
-            var result = reader.ParseCalibrationWithLetters(input);
+            var result = reader.ParseCalibration(input, true);
             Assert.AreEqual(expected, result);
         }
 
