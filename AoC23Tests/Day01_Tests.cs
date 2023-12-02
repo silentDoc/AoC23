@@ -75,7 +75,7 @@ namespace AoC23Tests
         public void First_and_Last_Only1Digit_Letters(string input, int expected)
         {
             var reader = new CalibrationReader();
-            var result = reader.ParseCalibrationWithLetters(input);
+            var result = reader.ParseCalibration(input, true);
             Assert.AreEqual(expected, result);
         }
 
@@ -90,7 +90,7 @@ namespace AoC23Tests
         public void First_and_Last_SmpleInput_Letters(string input, int expected)
         {
             var reader = new CalibrationReader();
-            var result = reader.ParseCalibrationWithLetters(input);
+            var result = reader.ParseCalibration(input, true);
             Assert.AreEqual(expected, result);
         }
 
