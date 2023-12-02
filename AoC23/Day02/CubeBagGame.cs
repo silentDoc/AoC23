@@ -10,14 +10,13 @@
     public class CubeBagGame
     {
         List<(int id, List<HandOfGame> game)> allGames = new();
+        HandOfGame Part1Limit = new() { Red = 12, Green = 13, Blue = 14 };
 
         public void ParseInput(List<string> input)
             => input.ForEach(x => allGames.Add(ParseGame(x)));
 
         public (int id, List<HandOfGame> game) ParseGame(string line) 
         {
-            // To improve with regex
-
             var parts = line.Split(':');
             var hands = parts[1].Split(';');
             int gameid = int.Parse(parts[0].Replace("Game ", ""));
@@ -39,7 +38,6 @@
                 }
                 allhands.Add(hand);
             }
-
             return (gameid, allhands);
         }
 
@@ -54,20 +52,8 @@
                Math.Max(game.Max(x => x.Blue), 1) * 
                Math.Max(game.Max(x => x.Green), 1);
 
-        int SolvePart1()
-        {
-            HandOfGame limit = new();
-            limit.Red = 12;
-            limit.Green = 13;
-            limit.Blue = 14;
-
-            return allGames.Where(x => CheckPossibleGame(x.game, limit)).Sum(g => g.id);
-        }
-
-        int SolvePart2()
-            => allGames.Sum(x => FindGamePower(x.game));
-
         public string Solve(int part)
-            => part == 1 ? SolvePart1().ToString() : SolvePart2().ToString();
+            => part == 1 ? allGames.Where(x => CheckPossibleGame(x.game, Part1Limit)).Sum(g => g.id).ToString()
+                         : allGames.Sum(x => FindGamePower(x.game)).ToString();
     }
 }
