@@ -50,7 +50,9 @@
 
 
         public int FindGamePower(List<HandOfGame> game)
-            => 0;
+            => Math.Max(game.Max(x => x.Red), 1) * 
+               Math.Max(game.Max(x => x.Blue), 1) * 
+               Math.Max(game.Max(x => x.Green), 1);
 
         int SolvePart1()
         {
@@ -62,7 +64,10 @@
             return allGames.Where(x => CheckPossibleGame(x.game, limit)).Sum(g => g.id);
         }
 
+        int SolvePart2()
+            => allGames.Sum(x => FindGamePower(x.game));
+
         public string Solve(int part)
-            => part == 1 ? SolvePart1().ToString() : "";
+            => part == 1 ? SolvePart1().ToString() : SolvePart2().ToString();
     }
 }
