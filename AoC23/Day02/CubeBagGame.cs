@@ -49,6 +49,9 @@
                  game.Any(x => x.Green > limit.Green));
 
 
+        public int FindGamePower(List<HandOfGame> game)
+            => 0;
+
         int SolvePart1()
         {
             HandOfGame limit = new();
