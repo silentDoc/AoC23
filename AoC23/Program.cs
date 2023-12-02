@@ -36,5 +36,12 @@ namespace AoC23
 
             return reader.Solve(part);
         }
+
+        static string day2(string input, int part)
+        {
+            var lines = File.ReadAllLines(input).ToList();
+
+            return "";
+        }
     }
 }
