@@ -14,7 +14,7 @@ namespace AoC23.Day03
             Positions = positions;
         }
 
-        public bool AdjacentToSymbol(List<Coord2D> SymbolPositions)
+        public bool AdjacentToSymbol(HashSet<Coord2D> SymbolPositions)
         {
             var allNeighbours = Positions.SelectMany(x => x.GetNeighbors8());
             return allNeighbours.Any( p => SymbolPositions.Contains(p));
@@ -29,9 +29,8 @@ namespace AoC23.Day03
 
     public  class GondolaCalculator
     {
-        List<Coord2D> Symbols = new List<Coord2D>();
-        List<Coord2D> Gears = new List<Coord2D>();
-
+        HashSet<Coord2D> Symbols = new HashSet<Coord2D>();
+        HashSet<Coord2D> Gears = new HashSet<Coord2D>();
         List<FoundNumber> Numbers = new();
 
         public void ParseInput(List<string> lines)
@@ -42,18 +41,16 @@ namespace AoC23.Day03
                 line.ToCharArray();
                 for (int i = 0; i < line.Length; i++)
                 {
-                    if (char.IsDigit(line[i]))
+                    if (char.IsDigit(line[i]))      // A number will occupy a list of positions (its digits')
                     {
                         StringBuilder sb = new StringBuilder();
                         int initalColumn = i;
-                        while (char.IsDigit(line[i]))
+                        while (i < line.Length && char.IsDigit(line[i]))
                         {
                             sb.Append(line[i]);
                             i++;
-
-                            if (i == line.Length)
-                                break;
                         }
+
                         int num = int.Parse(sb.ToString());
                         List<Coord2D> numPositions = new List<Coord2D>();
                         for (int range = initalColumn; range < i; range++)
@@ -61,21 +58,16 @@ namespace AoC23.Day03
 
                         FoundNumber foundNum = new FoundNumber(num, numPositions);
                         Numbers.Add(foundNum);
-                        i--;
-                        continue;
+                        i--;    // The last increment could skip a symbol just after a digit
                     }
-
-                    if (line[i] == '.')
-                        continue;
-
-                    if (line[i] == '*')
-                        Gears.Add(new Coord2D(i, j));
-
-                    // not a digit or a dot -- a symbol
-                    Symbols.Add(new Coord2D(i,j));
+                    else if (line[i] != '.')    // Anything not a digit or a dot is a symbol
+                    {
+                        Symbols.Add(new Coord2D(i, j));
+                        if (line[i] == '*')
+                            Gears.Add(new Coord2D(i, j));
+                    }
                 }
             }
-            Console.WriteLine();
         }
 
         int SolvePart1()
@@ -87,10 +79,8 @@ namespace AoC23.Day03
             foreach (var gearPosition in Gears)
             { 
                 var listAdjacent = Numbers.Where(x => x.AdjacentToGear(gearPosition)).Select(x => x.Number).ToList();
-                if(listAdjacent.Count <=1)
-                    continue;
-
-                sum += listAdjacent.Aggregate(1, (acc, val) => acc * val);
+                if(listAdjacent.Count >1)
+                    sum += listAdjacent.Aggregate(1, (acc, val) => acc * val);
             }
             return sum;
         }
