@@ -19,11 +19,19 @@ namespace AoC23.Day03
             var allNeighbours = Positions.SelectMany(x => x.GetNeighbors8());
             return allNeighbours.Any( p => SymbolPositions.Contains(p));
         }
+
+        public bool AdjacentToGear(Coord2D gearPosition)
+        {
+            var allNeighbours = Positions.SelectMany(x => x.GetNeighbors8());
+            return allNeighbours.Contains(gearPosition);
+        }
     }
 
     public  class GondolaCalculator
     {
         List<Coord2D> Symbols = new List<Coord2D>();
+        List<Coord2D> Gears = new List<Coord2D>();
+
         List<FoundNumber> Numbers = new();
 
         public void ParseInput(List<string> lines)
@@ -60,6 +68,9 @@ namespace AoC23.Day03
                     if (line[i] == '.')
                         continue;
 
+                    if (line[i] == '*')
+                        Gears.Add(new Coord2D(i, j));
+
                     // not a digit or a dot -- a symbol
                     Symbols.Add(new Coord2D(i,j));
                 }
@@ -70,7 +81,22 @@ namespace AoC23.Day03
         int SolvePart1()
             => Numbers.Where(x => x.AdjacentToSymbol(Symbols)).Sum(x => x.Number);
 
+        int SolvePart2()
+        {
+            int sum = 0;
+            foreach (var gearPosition in Gears)
+            { 
+                var listAdjacent = Numbers.Where(x => x.AdjacentToGear(gearPosition)).Select(x => x.Number).ToList();
+                if(listAdjacent.Count <=1)
+                    continue;
+
+                sum += listAdjacent.Aggregate(1, (acc, val) => acc * val);
+            }
+            return sum;
+        }
+        
+
         public string Solve(int part)
-            => part == 1 ? SolvePart1().ToString() : "";
+            => part == 1 ? SolvePart1().ToString() : SolvePart2().ToString();
     }
 }
