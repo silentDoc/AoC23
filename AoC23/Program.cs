@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using AoC23.Day03;
+using System.Diagnostics;
 
 namespace AoC23
 {
@@ -8,7 +9,7 @@ namespace AoC23
         {
             int day = 3;
             int part = 1;
-            bool test = !false;
+            bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -50,8 +51,10 @@ namespace AoC23
         static string day3(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
+            Day03.GondolaCalculator gondola = new();
+            gondola.ParseInput(lines);
 
-            return "";
+            return gondola.Solve(part);
         }
     }
 }
