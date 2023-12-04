@@ -56,8 +56,7 @@ namespace AoC23.Day03
                         for (int range = initalColumn; range < i; range++)
                             numPositions.Add(new Coord2D(range, j));
 
-                        FoundNumber foundNum = new FoundNumber(num, numPositions);
-                        Numbers.Add(foundNum);
+                        Numbers.Add( new FoundNumber(num, numPositions));
                         i--;    // The last increment could skip a symbol just after a digit
                     }
                     else if (line[i] != '.')    // Anything not a digit or a dot is a symbol
@@ -70,9 +69,6 @@ namespace AoC23.Day03
             }
         }
 
-        int SolvePart1()
-            => Numbers.Where(x => x.AdjacentToSymbol(Symbols)).Sum(x => x.Number);
-
         int SolvePart2()
         {
             int sum = 0;
@@ -84,9 +80,8 @@ namespace AoC23.Day03
             }
             return sum;
         }
-        
-
         public string Solve(int part)
-            => part == 1 ? SolvePart1().ToString() : SolvePart2().ToString();
+            => part == 1 ? Numbers.Where(x => x.AdjacentToSymbol(Symbols)).Sum(x => x.Number).ToString()
+                         : SolvePart2().ToString();
     }
 }
