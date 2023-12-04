@@ -6,7 +6,7 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 3;
+            int day = 4;
             int part = 1;
             bool test = false;
 
@@ -60,8 +60,10 @@ namespace AoC23
         static string day4(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
+            Day04.Scratcher scratcher = new();
+            scratcher.ParseInput(lines);
 
-            return "";
+            return scratcher.Solve(part).ToString();
         }
     }
 }

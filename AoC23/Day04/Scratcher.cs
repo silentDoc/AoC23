@@ -11,12 +11,16 @@
             CardNum = int.Parse(info[0].Replace("Card ", ""));
 
             var parts = info[1].Split("|");
-            CardNumbers = parts[1].Split(" ").Select(x => int.Parse(x)).ToList();
-            WinningNumbers = parts[0].Split(" ").Select(x => int.Parse(x)).ToList();
+            CardNumbers = parts[1].Split(" ", StringSplitOptions.TrimEntries|StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToList();
+            WinningNumbers = parts[0].Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToList();
         }
 
         public int Points()
-            => 0;
+        {
+            int appearences = CardNumbers.Where(x => WinningNumbers.Contains(x)).Count();
+            return (int) Math.Pow(2, appearences - 1);
+        }
+        
     }
 
     internal class Scratcher
@@ -25,14 +29,12 @@
         public void ParseInput(List<string> lines)
             => lines.ForEach(x => cards.Add(new ScratchCard(x)));
 
-        int SolvePart1()
-            => 0;
-
         int SolvePart2()
             => 0;
 
 
         public int Solve(int part)
-            => part == 1 ? SolvePart1() : SolvePart2();
+            => part == 1 ? cards.Sum(x => x.Points())
+                         : SolvePart2();
     }
 }
