@@ -27,7 +27,7 @@ namespace AoC23
             
             st.Stop();
             Console.WriteLine("Result : {0}", result);
-            Console.WriteLine("Ellapsed : {0}", st.Elapsed.TotalSeconds);
+            Console.WriteLine("Elapsed : {0}", st.Elapsed.TotalSeconds);
         }
 
         static string day1(string input, int part)
