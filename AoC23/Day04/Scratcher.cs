@@ -4,7 +4,8 @@
     {
         List<int> CardNumbers = new();
         List<int> WinningNumbers = new();
-        int CardNum = 0;
+        public int CardNum = 0;
+        public long Copies = 1;
         public ScratchCard(string inputLine)
         {
             var info = inputLine.Split(":");
@@ -15,12 +16,11 @@
             WinningNumbers = parts[0].Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToList();
         }
 
-        public int Points()
-        {
-            int appearences = CardNumbers.Where(x => WinningNumbers.Contains(x)).Count();
-            return (int) Math.Pow(2, appearences - 1);
-        }
-        
+        public int Points
+            => (int)Math.Pow(2, MatchingNumbers - 1);
+
+        public int MatchingNumbers
+            => CardNumbers.Where(x => WinningNumbers.Contains(x)).Count();
     }
 
     internal class Scratcher
@@ -29,12 +29,19 @@
         public void ParseInput(List<string> lines)
             => lines.ForEach(x => cards.Add(new ScratchCard(x)));
 
-        int SolvePart2()
-            => 0;
+        long SolvePart2()
+        {
+            // Process deck
+            for (int i = 0; i < cards.Count; i++)
+                for (int j = i + 1; j <= i + cards[i].MatchingNumbers; j++)
+                    if (j < cards.Count)
+                        cards[j].Copies += cards[i].Copies; 
 
+            return cards.Sum(x => x.Copies);
+        }
 
-        public int Solve(int part)
-            => part == 1 ? cards.Sum(x => x.Points())
+        public long Solve(int part)
+            => part == 1 ? (long) cards.Sum(x => x.Points)
                          : SolvePart2();
     }
 }

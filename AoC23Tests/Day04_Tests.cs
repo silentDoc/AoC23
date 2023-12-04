@@ -16,7 +16,7 @@ namespace AoC23Tests
         {
             var card = new ScratchCard(input);
 
-            Assert.AreEqual(expected, card.Points());
+            Assert.AreEqual(expected, card.Points);
         }
     }
 }
