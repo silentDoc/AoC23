@@ -10,15 +10,15 @@
         {
             var info = inputLine.Split(":");
             var parts = info[1].Split("|");
-            CardNumbers = parts[1].Split(" ", StringSplitOptions.TrimEntries|StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToList();
+            CardNumbers    = parts[1].Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToList();
             WinningNumbers = parts[0].Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToList();
         }
 
         public int Points
-            => (int)Math.Pow(2, MatchingNumbers - 1);
+            => (int) Math.Pow(2, MatchingNumbers - 1);
 
         public int MatchingNumbers
-            => CardNumbers.Where(x => WinningNumbers.Contains(x)).Count();
+            => CardNumbers.Count(x => WinningNumbers.Contains(x));
     }
 
     internal class Scratcher
