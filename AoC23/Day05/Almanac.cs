@@ -1,13 +1,11 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace AoC23.Day05
+﻿namespace AoC23.Day05
 {
     public class AlmanacRule
     {
-        long sourceStart = 0;
-        long sourceEnd = 0;
-        long destinationStart = 0;
-        long range = 0;
+        public long sourceStart = 0;
+        public long sourceEnd = 0;
+        public long destinationStart = 0;
+        public long range = 0;
 
         public AlmanacRule(string inputLine)
         {
@@ -83,6 +81,78 @@ namespace AoC23.Day05
             var rule = rules.FirstOrDefault(x => x.InRange(queryValue));
             return rule == null ? queryValue : rule.MapValue(queryValue);
         }
+
+        bool IsMapped(long queryValue, List<AlmanacRule> rules)
+            => rules.Any(x => x.InRange(queryValue));
+
+        AlmanacRule WhichRuleMaps(long queryValue, List<AlmanacRule> rules)
+            => rules.First(x => x.InRange(queryValue));
+
+        List<long> MapRange(List<long> ranges, List<AlmanacRule> rules)
+        {
+            List<long> result = new();
+
+            for(int i = 0; i < ranges.Count; i++) 
+            {
+                long rangeStart = ranges[i++];
+                long rangeEnd = ranges[i];
+                long current = rangeStart;
+
+                // Fully process a range
+                
+                while (current <= rangeEnd)
+                {
+                    result.Add(MapValue(current, rules));
+
+                    if (IsMapped(current, rules))
+                    {
+                        var rule = WhichRuleMaps(current, rules);
+                        // Find until which point the rule allows us to map the value
+                        var lastValueInRange = Math.Min(rangeEnd, rule.sourceEnd);
+                        result.Add(rule.MapValue(lastValueInRange));
+                        current = lastValueInRange;
+                        if (current == rule.sourceEnd)
+                            current++;
+
+                        if (current == rangeEnd)
+                            break;
+                    }
+                    else
+                    {
+                        // Not mapped, find the first rule that maps it
+                        var nextRule = rules.Where(x => x.sourceStart > current).OrderBy(x => x.sourceStart).FirstOrDefault();
+                        if (nextRule == null)
+                        {
+                            result.Add(rangeEnd);
+                            current = rangeEnd;
+                            break;
+                        }
+                        else
+                        {
+                            var nextValueInRange = Math.Min(nextRule.sourceStart, rangeEnd);
+                            if (nextRule.sourceStart == rangeEnd)
+                            {
+                                result.Add(rangeEnd - 1);
+                                result.Add(nextRule.MapValue(rangeEnd));
+                                result.Add(nextRule.MapValue(rangeEnd));
+                                break;
+                            }
+                            else if (nextRule.sourceStart > rangeEnd)
+                            {
+                                result.Add(rangeEnd);
+                                break;
+                            }
+                            else
+                            {
+                                result.Add(nextRule.sourceStart-1);
+                                current = nextRule.sourceStart;
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
             
 
         long SolvePart1()
@@ -111,10 +181,28 @@ namespace AoC23.Day05
 
             return gardenRelations.Min(x => x.location);
         }
+        long SolvePart2()
+        {
+            List<long> preppedSeeds = new();
 
+            for (int i = 0; i < seeds.Count; i++)
+                if (i % 2 == 0)
+                    preppedSeeds.Add(seeds[i]);
+                else
+                    preppedSeeds.Add(seeds[i-1] + seeds[i]-1);
 
+            var soilRanges = MapRange(preppedSeeds, seed2soil);
+            var fertRanges = MapRange(soilRanges, soil2fert);
+            var waterRanges = MapRange(fertRanges, fert2water);
+            var lightRanges = MapRange(waterRanges, water2light);
+            var tempRanges = MapRange(lightRanges, light2temp);
+            var humidRanges = MapRange(tempRanges, temp2humid);
+            var locationRanges = MapRange(humidRanges, humid2location);
+
+            return locationRanges.Min()-1;
+    }
         public long Solve(int part = 1)
-            => part == 1 ? SolvePart1() : 0;
+            => part == 1 ? SolvePart1() : SolvePart2();
 
     }
 }
