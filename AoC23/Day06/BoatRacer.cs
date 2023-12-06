@@ -4,10 +4,10 @@ namespace AoC23.Day06
 {
     public class Race
     {
-        public int Time = 0;
-        public int Distance = 0;
+        public long Time = 0;
+        public long Distance = 0;
 
-        public Race(int time, int distance)
+        public Race(long time, long distance)
         {
             Time = time;
             Distance = distance;
@@ -21,9 +21,9 @@ namespace AoC23.Day06
         public void ParseInput(List<string> lines)
         { 
             var timeInputs = lines[0].Replace("Time:", "").Split(" ", StringSplitOptions.RemoveEmptyEntries)
-                                     .Select(x => int.Parse(x)).ToList();
+                                     .Select(x => long.Parse(x)).ToList();
             var distInputs = lines[1].Replace("Distance:", "").Split(" ", StringSplitOptions.RemoveEmptyEntries)
-                                     .Select(x => int.Parse(x)).ToList();
+                                     .Select(x => long.Parse(x)).ToList();
 
             for (int i = 0; i < timeInputs.Count; i++)
                 Races.Add(new Race(timeInputs[i] , distInputs[i]));
@@ -31,11 +31,11 @@ namespace AoC23.Day06
 
         int FindWaysToWin(Race race)
         {
-            var number = 0;
-            for (int i = 0; i < race.Time; i++)
+            int number = 0;
+            for (long i = 0; i < race.Time; i++)
             {
-                var velocity = i;
-                var distance = (race.Time - i) * velocity;
+                long velocity = i;
+                long distance = (race.Time - i) * velocity;
                 if(distance > race.Distance)
                     number++;
             }
@@ -53,8 +53,23 @@ namespace AoC23.Day06
             return results.Aggregate(1, (acc,x) => acc*x);
         }
 
+        int SolvePart2()
+        {
+            // tweak the input
+            var timestr = "";
+            var diststr = "";
+            for (int i = 0; i < Races.Count; i++)
+            {
+                timestr = timestr + Races[i].Time.ToString();
+                diststr = diststr + Races[i].Distance.ToString();
+            }
+
+            var onlyRace = new Race(long.Parse(timestr), long.Parse(diststr));
+            return FindWaysToWin(onlyRace);
+        }
+
         public int Solve(int part)
-            => part == 1 ? SolvePart1() : 0;
+            => part == 1 ? SolvePart1() : SolvePart2();
 
     }
 }
