@@ -80,7 +80,8 @@ namespace AoC23
         static string day6(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
-            Day06.BoatRacer racer = new();
+            //Day06.BoatRacer racer = new();
+            Day06.BoatRacerShort racer = new();
             racer.ParseInput(lines);
 
             return racer.Solve(part).ToString();
