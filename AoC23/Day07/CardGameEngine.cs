@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace AoC23.Day07
+﻿namespace AoC23.Day07
 {
     public static class HandRank
     {
@@ -16,48 +14,98 @@ namespace AoC23.Day07
     public class Hand
     {
         char[] CardPower = new char[13] { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
+        char[] CardPowerPart2 = new char[13] { 'J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A' };
 
         public List<char> Cards = new();
+        public List<char> Part2Cards = new();
         public int Bid = 0;
         public int Rank = 0;
+        int Part = 1;
 
-        public Hand(string inputLine)
+        public Hand(string inputLine, int part =1)
         {
             var parts = inputLine.Split(' ', StringSplitOptions.TrimEntries);
             Cards = parts[0].ToCharArray().ToList();
+            Part2Cards = parts[0].ToCharArray().ToList();
             Bid = int.Parse(parts[1]);
-            GetRank();
+
+            if (part == 2)
+            {
+                ProcessJokers();
+                Rank = GetRank(Part2Cards);
+                Part = 2;
+            }
+            else
+                Rank = GetRank(Cards);
+        }
+
+        void ProcessJokers()
+        {
+            // Special case
+            if (Cards.Count(x => x == 'J') == 5)
+            {
+                for (int i = 0; i < Part2Cards.Count; i++)
+                    Part2Cards[i] = 'A';
+                return;
+            }
+
+
+            var cardsNoJokers = Cards.Where(x => x != 'J').ToList();
+            var occurences = cardsNoJokers.Distinct().Select(x => Cards.Count(c => c == x)).ToList();
+            var maxOcc = occurences.Max();
+
+            // Find the best card
+            char bestCard = 'f';
+            if (occurences.Count(x => x == maxOcc) > 1)
+            {
+                // Two tying cards, find the best one
+                var tyingCards = cardsNoJokers.Where(x => cardsNoJokers.Count(y => y == x) == maxOcc).ToList();
+                var maxPower = tyingCards.Max(x => Array.IndexOf(CardPower, x));
+
+                bestCard = tyingCards.First(x => Array.IndexOf(CardPower, x) == maxPower);
+            }
+            else
+                bestCard = cardsNoJokers.First( x => cardsNoJokers.Count(c => c ==x) == maxOcc);
+
+            // Replace the Joker by the best hand
+            for (int i = 0; i < Part2Cards.Count; i++)
+                if (Part2Cards[i] == 'J')
+                    Part2Cards[i] = bestCard;
         }
 
         public int GetPowerByPos(int pos)
-            => Array.IndexOf(CardPower, Cards[pos]);
+            => Part == 1 ?  Array.IndexOf(CardPower, Cards[pos])
+                         :  Array.IndexOf(CardPowerPart2, Cards[pos]);
 
-        void GetRank()
+        int GetRank(List<char> cards)
         {
-            var occurences = Cards.Distinct().Select(x => Cards.Count(c => c == x)).ToList();
+            var occurences = cards.Distinct().Select(x => cards.Count(c => c == x)).ToList();
+            var rank = 0;
 
             if (occurences.Any(x => x == 5))
-                Rank = HandRank.Repoker;
+                rank = HandRank.Repoker;
             else if (occurences.Any(x => x == 4))
-                Rank = HandRank.Poker;
+                rank = HandRank.Poker;
             else if (occurences.Any(x => x == 3) && occurences.Any(x => x == 2))
-                Rank = HandRank.FullHouse;
+                rank = HandRank.FullHouse;
             else if (occurences.Any(x => x == 3))
-                Rank = HandRank.ThreeFold;
+                rank = HandRank.ThreeFold;
             else if (occurences.Count(x => x == 2) == 2)
-                Rank = HandRank.TwoPair;
+                rank = HandRank.TwoPair;
             else if (occurences.Any(x => x == 2))       // Else above prevents from counting two pair or fullhouse
-                Rank = HandRank.Pair;
+                rank = HandRank.Pair;
             else
-                Rank = HandRank.HighCard;
+                rank = HandRank.HighCard;
+
+            return rank;
         }
     }
 
     public class CardGameEngine
     {
         List<Hand> hands = new();
-        public void ParseInput(List<string> lines)
-            => lines.ForEach(x => hands.Add(new Hand(x)));
+        public void ParseInput(List<string> lines, int part =1)
+            => lines.ForEach(x => hands.Add(new Hand(x, part)));
 
         Hand FindBestHandByPower(List<Hand> hands)
         {
@@ -75,7 +123,7 @@ namespace AoC23.Day07
             return topSet[0];
         }
 
-        public int SolvePart1()
+        public int RunGame(int part = 1)
         {
             List<Hand> orderedGame = new();
 
@@ -100,8 +148,7 @@ namespace AoC23.Day07
             return result;
         }
 
-
         public int Solve(int part)
-            => part == 1 ? SolvePart1() : 0;
+            => RunGame(part);
     }
 }

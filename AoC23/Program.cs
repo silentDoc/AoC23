@@ -7,8 +7,8 @@ namespace AoC23
         static void Main(string[] args)
         {
             int day = 7;
-            int part = 1;
-            bool test = !false;
+            int part = 2;
+            bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -92,7 +92,7 @@ namespace AoC23
         {
             var lines = File.ReadAllLines(input).ToList();
             Day07.CardGameEngine engine = new();
-            engine.ParseInput(lines);
+            engine.ParseInput(lines, part);
 
             return engine.Solve(part).ToString();
         }
