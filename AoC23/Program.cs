@@ -6,9 +6,9 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 6;
-            int part = 2;
-            bool test = false;
+            int day = 7;
+            int part = 1;
+            bool test = !false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -80,11 +80,18 @@ namespace AoC23
         static string day6(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
-            //Day06.BoatRacer racer = new();
-            Day06.BoatRacerShort racer = new();
+            Day06.BoatRacer racer = new();
+            //Day06.BoatRacerShort racer = new();
             racer.ParseInput(lines);
 
             return racer.Solve(part).ToString();
+        }
+
+        static string day7(string input, int part)
+        {
+            var lines = File.ReadAllLines(input).ToList();
+
+            return "";
         }
     }
 }
