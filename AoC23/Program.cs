@@ -24,6 +24,7 @@ namespace AoC23
                 4 => day4(input, part),
                 5 => day5(input, part),
                 6 => day6(input, part),
+                7 => day7(input, part),
                 _ => throw new ArgumentException("Wrong day number - unimplemented")
             };
             
@@ -90,8 +91,10 @@ namespace AoC23
         static string day7(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
+            Day07.CardGameEngine engine = new();
+            engine.ParseInput(lines);
 
-            return "";
+            return engine.Solve(part).ToString();
         }
     }
 }
