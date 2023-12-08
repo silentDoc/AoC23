@@ -62,7 +62,46 @@
             return steps;
         }
 
-        public int Solve(int part = 1)
-            => part == 1 ? NavigateStorm() : 0;
+
+        long GhostSteps(DesertNode ghostNode)
+        {
+            var insPtr = 0;
+            DesertNode current = ghostNode;
+            int steps = 0;
+            while (current.Name.Last() != 'Z')
+            {
+                current = (Instructions[insPtr] == 'L') ? current.Left : current.Right;
+                steps++;
+                insPtr++;
+                if (insPtr == Instructions.Length)
+                    insPtr = 0;
+
+            }
+
+            return (long) steps;
+        }
+
+        long gcd(long n1, long n2)
+        {
+            if (n2 == 0)
+                return n1;
+            else
+               return gcd(n2, n1 % n2);
+        }
+
+        long lcm(List<long> numbers)
+            => numbers.Aggregate((long S, long val) => S * val / gcd(S, val));
+
+
+        long GhostNavigator()
+        {
+
+            List<DesertNode> currentNodes = Nodes.Where(x => x.Name.Last() == 'A').ToList();
+            var distances = currentNodes.Select(x => GhostSteps(x)).ToList();
+            return lcm(distances);
+        }
+
+        public long Solve(int part = 1)
+            => part == 1 ? NavigateStorm() : GhostNavigator();
     }
 }
