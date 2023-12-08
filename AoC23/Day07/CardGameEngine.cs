@@ -123,7 +123,7 @@
             return topSet[0];
         }
 
-        public int RunGame(int part = 1)
+        public int RunGame()
         {
             List<Hand> orderedGame = new();
 
@@ -148,7 +148,7 @@
             return result;
         }
 
-        public int Solve(int part)
-            => RunGame(part);
+        public int Solve()
+            => RunGame();
     }
 }
