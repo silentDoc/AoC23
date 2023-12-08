@@ -18,7 +18,7 @@
                 ParseLine(lines[i]);
         }
 
-        int NavigateStorm()
+        int NavigateStorm()     // Part 1
         {
             var insPtr = 0;
             var current = "AAA";
@@ -35,8 +35,7 @@
             return steps;
         }
 
-
-        long NavigateStormGhost(string ghostNode)
+        long NavigateStormGhost(string ghostNode)   // For Part 2, different condition
         {
             var insPtr = 0;
             var current = ghostNode;
@@ -48,20 +47,13 @@
                 insPtr++;
                 if (insPtr == Instructions.Length)
                     insPtr = 0;
-
             }
-
             return (long) steps;
         }
 
-        long gcd(long n1, long n2)
-        {
-            // Greatest Common Divisor
-            if (n2 == 0)
-                return n1;
-            else
-               return gcd(n2, n1 % n2);
-        }
+        // Greatest Common Divisor
+        long gcd(long num1, long num2)
+            => (num2 == 0) ? num1 : gcd(num2, num1 % num2);
 
         // Least Common Multiple
         long lcm(List<long> numbers)
@@ -70,7 +62,6 @@
 
         long GhostNavigator()
         {
-
             List<string> currentNodes = Map.Keys.Where(x => x.Last() == 'A').ToList();
             var distances = currentNodes.Select(x => NavigateStormGhost(x)).ToList();
             return lcm(distances);
