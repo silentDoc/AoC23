@@ -1,6 +1,5 @@
 ﻿namespace AoC23.Day09
 {
-
     class SequenceAnalyzer
     {
         List<List<int>> sequences = new();
@@ -11,29 +10,14 @@
         public void ParseInput(List<string> lines)
             => lines.ForEach(ParseLine);
 
-        int FindNextElement(List<int> sequence)
+        int FindElement(List<int> seq, int part = 1)
         {
-            var range = Enumerable.Range(1, sequence.Count - 1);
-            var diff = range.Select(i => sequence[i] - sequence[i - 1]).ToList();
-            
-            int nextElement = diff.Any(x => x != 0) ? FindNextElement(diff)
-                                                    : diff[diff.Count - 1];
-
-            return sequence.Last() + nextElement;
-        }
-
-        int FindPreviousElement(List<int> sequence)
-        {
-            var range = Enumerable.Range(1, sequence.Count - 1);
-            var diff = range.Select(i => sequence[i] - sequence[i - 1]).ToList();
-
-            int previousElement = diff.Any(x => x != 0) ? FindPreviousElement(diff)
-                                                        : diff[0];
-
-            return sequence.First() - previousElement;
+            var difs = seq.Skip(1).Zip(seq.Take(seq.Count - 1), (f, s) => f - s).ToList();
+            return difs.Any(x => x != 0) ? (part == 1) ? seq.Last() + FindElement(difs, part) : seq.First() - FindElement(difs, part)
+                                         : (part == 1) ? seq.Last() + difs[difs.Count - 1] : seq.First() - difs[0];
         }
 
         public int Solve(int part)
-            => part == 1 ? sequences.Sum(x => FindNextElement(x)) : sequences.Sum(x => FindPreviousElement(x));
+            => sequences.Sum(x => FindElement(x, part));
     }
 }
