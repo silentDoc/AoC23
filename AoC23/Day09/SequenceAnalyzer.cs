@@ -13,8 +13,8 @@
         int FindElement(List<int> seq, int part = 1)
         {
             var difs = seq.Skip(1).Zip(seq.Take(seq.Count - 1), (f, s) => f - s).ToList();
-            return difs.Any(x => x != 0) ? (part == 1) ? seq.Last() + FindElement(difs, part) : seq.First() - FindElement(difs, part)
-                                         : (part == 1) ? seq.Last() + difs[difs.Count - 1] : seq.First() - difs[0];
+            return part == 1 ? seq.Last() + (difs.Any(x => x != 0) ? FindElement(difs, part) : difs[^1])
+                             : seq.First() - (difs.Any(x => x != 0) ? FindElement(difs, part) : difs[0]);
         }
 
         public int Solve(int part)
