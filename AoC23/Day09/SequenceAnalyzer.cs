@@ -22,7 +22,18 @@
             return sequence.Last() + nextElement;
         }
 
+        int FindPreviousElement(List<int> sequence)
+        {
+            var range = Enumerable.Range(1, sequence.Count - 1);
+            var diff = range.Select(i => sequence[i] - sequence[i - 1]).ToList();
+
+            int previousElement = diff.Any(x => x != 0) ? FindPreviousElement(diff)
+                                                        : diff[0];
+
+            return sequence.First() - previousElement;
+        }
+
         public int Solve(int part)
-            => part == 1 ? sequences.Sum(x => FindNextElement(x)) : 0;
+            => part == 1 ? sequences.Sum(x => FindNextElement(x)) : sequences.Sum(x => FindPreviousElement(x));
     }
 }
