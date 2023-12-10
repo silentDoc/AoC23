@@ -1,4 +1,5 @@
 ﻿using AoC23.Common;
+using System.Text;
 
 namespace AoC23.Day10
 {
@@ -70,25 +71,28 @@ namespace AoC23.Day10
                 (_,_,_,_) => throw new Exception("wtf"), 
             };
 
-        public void ParseInput(List<string> lines)
+        public void ParseInput(List<string> lines, bool ProcessStart = true)
         {
             for (var row = 0; row < lines.Count; row++)
                 ParseLine(lines[row], row);
 
-            // Resolve the symbol of the start Pos
-            var adjacents = Map.Keys.Where( x => StartPos.GetNeighbors().Contains(x));
-            var connected = adjacents.Where(a => Map[a].adjacentPipes.Contains(StartPos)).ToList();
+            if (ProcessStart)
+            {
+                // Resolve the symbol of the start Pos
+                var adjacents = Map.Keys.Where(x => StartPos.GetNeighbors().Contains(x));
+                var connected = adjacents.Where(a => Map[a].adjacentPipes.Contains(StartPos)).ToList();
 
-            var bWest = connected.Any(x => x + posEast == StartPos);
-            var bEast = connected.Any(x => x + posWest == StartPos);
-            var bNorth = connected.Any(x => x + posSouth == StartPos);
-            var bSouth = connected.Any(x => x + posNorth == StartPos);
+                var bWest = connected.Any(x => x + posEast == StartPos);
+                var bEast = connected.Any(x => x + posWest == StartPos);
+                var bNorth = connected.Any(x => x + posSouth == StartPos);
+                var bSouth = connected.Any(x => x + posNorth == StartPos);
 
-            var startSym = FindStartSymbol((bEast, bWest, bNorth, bSouth));
-            var adjacentDirs = ConnectedPositions(startSym);
-            var adjacentPositions = adjacentDirs.Select(x => x + StartPos).ToList();
-            Map[StartPos] = new PipePosition(StartPos, startSym, adjacentPositions);
-            Map[StartPos].distance = 0;
+                var startSym = FindStartSymbol((bEast, bWest, bNorth, bSouth));
+                var adjacentDirs = ConnectedPositions(startSym);
+                var adjacentPositions = adjacentDirs.Select(x => x + StartPos).ToList();
+                Map[StartPos] = new PipePosition(StartPos, startSym, adjacentPositions);
+                Map[StartPos].distance = 0;
+            }
         }
 
 
@@ -97,13 +101,95 @@ namespace AoC23.Day10
             if (pipes.Count == 0)
                 return;
 
-            var adjacentSet = pipes.SelectMany(x => Map[x].adjacentPipes).Where(p => Map[p].distance == 999999).ToList();
+            // var adjacentSet = pipes.SelectMany(x => Map[x].adjacentPipes).Where(p => Map[p].distance == 999999).ToList();
+            List<Coord2D> adjacentSet = new();
+
+            foreach (var p in pipes)
+            {
+                var subSet = Map[p].adjacentPipes;
+                foreach (var a in subSet)
+                    if (Map[a].distance == 999999)
+                        adjacentSet.Add(a);
+            }
 
             foreach (var pipe in adjacentSet)
-                if(Map[pipe].distance > newCost)
                     Map[pipe].distance = newCost;   // this if should not be necessary
 
             TraverseMaze(adjacentSet, newCost + 1);
+        }
+
+        void TraverseMazeIter(List<Coord2D> pipes, int startCost)
+        {
+            int cost = startCost;
+            var pipesIter = TraverseMaze2(pipes, cost);
+
+            while (pipesIter.Count > 0)
+            {
+                cost++;
+                pipesIter = TraverseMaze2(pipesIter, cost);
+            }
+        }
+
+
+        List<Coord2D> TraverseMaze2(List<Coord2D> pipes, int newCost)
+        {
+            var adjacentSet = pipes.SelectMany(x => Map[x].adjacentPipes).Where(p => Map[p].distance == 999999).ToList();
+            foreach (var pipe in adjacentSet)
+                Map[pipe].distance = newCost;   // this if should not be necessary
+
+            return adjacentSet;
+        }
+
+
+        List<Coord2D> TraverseOpenPositions2(List<Coord2D> openPositions)
+        {
+            List<Coord2D> retVal = new();
+
+            var maxX = Map.Keys.Max(p => p.x);
+            var maxY = Map.Keys.Max(p => p.y);
+
+            foreach (var pos in openPositions)
+            {
+                var adjacentSet = pos.GetNeighbors().Where(n => n.x >= 0 && n.x <= maxX && n.y >= 0 && n.y <= maxY).Where(p => Map[p].distance == 999999).ToList();
+                foreach (var pipe in adjacentSet)
+                {
+                    Map[pipe].distance = -1;
+                    retVal.Add(pipe);
+                }
+            }
+
+            return retVal;
+        }
+
+        void TraverseOpenPositionsIter(List<Coord2D> pipes)
+        {
+            var pipesIter = TraverseOpenPositions2(pipes);
+            int iters = 0;
+            while (pipesIter.Count > 0)
+            {
+                iters++;
+                pipesIter = TraverseOpenPositions2(pipesIter);
+                if (iters % 100 == 0)
+                {
+                    Console.WriteLine("Iters : " + iters.ToString() + " - Count : " + pipesIter.Count.ToString());
+                }
+            }
+        }
+
+        void TraverseOpenPositions(List<Coord2D> openPositions)
+        {
+            if (openPositions.Count == 0)
+                return;
+
+            var adjacentSet = openPositions.SelectMany(x => x.GetNeighbors())
+                                      .Where(p => Map.Keys.Contains(p))
+                                      .Where(p => Map[p].distance == 999999).ToList();
+            
+
+            foreach (var pipe in adjacentSet)
+                    Map[pipe].distance = -1;  
+
+            TraverseOpenPositions(adjacentSet);
         }
 
         void PrintMap()
@@ -116,7 +202,7 @@ namespace AoC23.Day10
                 for (int c = 0; c <= cols; c++)
                 {
                     Coord2D key = (c, r);
-                    Console.Write(Map[key].ToString());
+                    Console.Write(Map[key].Symbol.ToString());
                 }
                 Console.WriteLine();
             }
@@ -133,9 +219,31 @@ namespace AoC23.Day10
                 {
                     Coord2D key = (c, r);
                     if(Map[key].distance< 999999)
-                        Console.Write(Map[key].distance.ToString());
+                        Console.Write((Map[key].distance %10).ToString());
                     else
                         Console.Write(".");
+                }
+                Console.WriteLine();
+            }
+        }
+
+        void PrintEnclosedOpen()
+        {
+            int rows = Map.Keys.Max(p => p.y);
+            int cols = Map.Keys.Max(p => p.x);
+
+            for (int r = 0; r <= rows; r++)
+            {
+                for (int c = 0; c <= cols; c++)
+                {
+                    Coord2D key = (c, r);
+                    if (Map[key].distance == 999999)
+                        Console.Write("E");
+                    else if (Map[key].distance == -1)
+                        Console.Write("o");
+                    else
+                        Console.Write("x");
+                    
                 }
                 Console.WriteLine();
             }
@@ -144,14 +252,151 @@ namespace AoC23.Day10
         int SolvePart1()
         {
             TraverseMaze(new List<Coord2D> { StartPos }, 1);
-
-            PrintMap();
-            PrintDist();
-
             return Map.Values.Where(x => x.distance < 999999).Max(x => x.distance);
         }
 
+        void ExpandGrid()
+        {
+            List<string> newInput = new();
+
+            int rows = Map.Keys.Max(p => p.y);
+            int cols = Map.Keys.Max(p => p.x);
+
+            for (int r = 0; r <= rows; r++)
+            {
+                StringBuilder l1 = new("");
+                StringBuilder l2 = new("");
+                StringBuilder l3 = new("");
+
+                for (int c = 0; c <= cols; c++)
+                {
+                    var pipe = Map[(c, r)];
+
+                    if (pipe.Symbol == '.')
+                    {
+                        l1.Append("...");
+                        l2.Append("...");
+                        l3.Append("...");
+                    }
+                    if (pipe.Symbol == '-')
+                    {
+                        l1.Append("...");
+                        l2.Append("---");
+                        l3.Append("...");
+                    }
+                    if (pipe.Symbol == '|')
+                    {
+                        l1.Append(".|.");
+                        l2.Append(".|.");
+                        l3.Append(".|.");
+                    }
+                    if (pipe.Symbol == 'F')
+                    {
+                        l1.Append("...");
+                        l2.Append(".F-");
+                        l3.Append(".|.");
+                    }
+                    if (pipe.Symbol == '7')
+                    {
+                        l1.Append("...");
+                        l2.Append("-7.");
+                        l3.Append(".|.");
+                    }
+                    if (pipe.Symbol == 'L')
+                    {
+                        l1.Append(".|.");
+                        l2.Append(".L-");
+                        l3.Append("...");
+                    }
+                    if (pipe.Symbol == 'J')
+                    {
+                        l1.Append(".|.");
+                        l2.Append("-J.");
+                        l3.Append("...");
+                    }
+                }
+                newInput.Add(l1.ToString());
+                newInput.Add(l2.ToString());
+                newInput.Add(l3.ToString());
+            }
+
+            StartPos = (StartPos.x * 3 +1, StartPos.y * 3+1);
+            Map.Clear();
+            ParseInput(newInput, false);
+            Map[StartPos].distance = 0;
+        }
+
+        int SolvePart2()
+        {
+            Console.WriteLine("Traversing solution");
+            TraverseMazeIter(new List<Coord2D> { StartPos }, 1);    // Find the originalMap solution
+
+            var originalMap = new Dictionary<Coord2D, PipePosition>();
+            foreach (var k in Map.Keys)
+                originalMap[k] = Map[k];
+
+            
+            // Zoom in
+            ExpandGrid();   // We zoom in
+            
+            Console.WriteLine(Map.Values.Where(x => x.adjacentPipes.Count > 0).Count().ToString());
+
+            // Find the solution of zoomed map
+            Console.WriteLine("Traversing zoomed solution");
+            TraverseMazeIter(new List<Coord2D> { StartPos }, 1);
+
+            var notBelongingToLoop = Map.Keys.Where(x => Map[x].distance == 999999).ToList();
+            // Find the ones that do not belong to the group and that can traverse to touch an edge
+
+            List<Coord2D> openPosSeed = new();
+            int rows = Map.Keys.Max(p => p.y);
+            int cols = Map.Keys.Max(p => p.x);
+
+            for (int r = 0; r <= rows; r++)
+            {
+                if (Map[(0, r)].distance == 999999)
+                {
+                    Map[(0, r)].distance = -1;
+                    openPosSeed.Add((0, r));
+                }
+                if (Map[(cols, r)].distance == 999999)
+                {
+                    Map[(cols, r)].distance = -1;
+                    openPosSeed.Add((cols, r));
+                }
+            }
+
+            for (int c = 0; c <= cols; c++)
+            {
+                if (Map[(c, rows)].distance == 999999)
+                {
+                    Map[(c, rows)].distance = -1;
+                    openPosSeed.Add((c, rows));
+                }
+                if (Map[(c, 0)].distance == 999999)
+                {
+                    Map[(c, 0)].distance = -1;
+                    openPosSeed.Add((c, rows));
+                }
+            }
+
+            Console.WriteLine("Traversing open cells");
+            TraverseOpenPositionsIter(openPosSeed);
+
+            Console.WriteLine("Counting");
+            var originalNotBelong = originalMap.Keys.Where(x => originalMap[x].distance == 999999).ToList();
+            int countClosed = 0;
+            foreach (var k in originalNotBelong)
+            {
+                Coord2D expGridKey = (k.x * 3 + 1, k.y * 3 + 1);
+                if (Map[expGridKey].distance != -1)
+                    countClosed++;
+            }
+
+            return countClosed;
+        }
+
         public int Solve(int part = 1)
-            => SolvePart1();
+            => part ==1 ? SolvePart1() : SolvePart2();
     }
 }
