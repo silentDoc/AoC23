@@ -189,12 +189,6 @@ namespace AoC23.Day10
             if ( pos.x == 0 || pos.y == 0 || pos.x == MaxX || pos.y == MaxY)
                 return false;
 
-            if (pos.x == 11 && pos.y == 4)
-            {
-                var xxx = 0;
-                xxx = xxx + 1;
-            }
-
             previousH = CountHCrossings(pos, 0, pos.x-1);
             afterH = CountHCrossings(pos, pos.x + 1, MaxX);
 
