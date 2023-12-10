@@ -58,7 +58,7 @@ namespace AoC23.Day10
             }
         }
 
-
+        // Resolves which pipe shape is the "S" on the map
         Char FindStartSymbol((bool east, bool west, bool north, bool south) connections)
             => connections switch
             {
@@ -76,7 +76,7 @@ namespace AoC23.Day10
             for (var row = 0; row < lines.Count; row++)
                 ParseLine(lines[row], row);
 
-            if (ProcessStart)
+            if (ProcessStart)   // NOT Needed for Part 2, when we expand the grid
             {
                 // Resolve the symbol of the start Pos
                 var adjacents = Map.Keys.Where(x => StartPos.GetNeighbors().Contains(x));
@@ -95,43 +95,20 @@ namespace AoC23.Day10
             }
         }
 
-
-        void TraverseMaze(List<Coord2D> pipes, int newCost)
-        {
-            if (pipes.Count == 0)
-                return;
-
-            // var adjacentSet = pipes.SelectMany(x => Map[x].adjacentPipes).Where(p => Map[p].distance == 999999).ToList();
-            List<Coord2D> adjacentSet = new();
-
-            foreach (var p in pipes)
-            {
-                var subSet = Map[p].adjacentPipes;
-                foreach (var a in subSet)
-                    if (Map[a].distance == 999999)
-                        adjacentSet.Add(a);
-            }
-
-            foreach (var pipe in adjacentSet)
-                    Map[pipe].distance = newCost;   // this if should not be necessary
-
-            TraverseMaze(adjacentSet, newCost + 1);
-        }
-
         void TraverseMazeIter(List<Coord2D> pipes, int startCost)
         {
             int cost = startCost;
-            var pipesIter = TraverseMaze2(pipes, cost);
+            var pipesIter = ProcessAdjacentsInLoop(pipes, cost);
 
             while (pipesIter.Count > 0)
             {
                 cost++;
-                pipesIter = TraverseMaze2(pipesIter, cost);
+                pipesIter = ProcessAdjacentsInLoop(pipesIter, cost);
             }
         }
 
 
-        List<Coord2D> TraverseMaze2(List<Coord2D> pipes, int newCost)
+        List<Coord2D> ProcessAdjacentsInLoop(List<Coord2D> pipes, int newCost)
         {
             var adjacentSet = pipes.SelectMany(x => Map[x].adjacentPipes).Where(p => Map[p].distance == 999999).ToList();
             foreach (var pipe in adjacentSet)
@@ -139,18 +116,27 @@ namespace AoC23.Day10
 
             return adjacentSet;
         }
+                
 
+        void TraverseOpenPositionsIter(List<Coord2D> pipes)
+        {
+            var pipesIter = ProcessAdjacentsOpen(pipes);
+            while (pipesIter.Count > 0)
+                pipesIter = ProcessAdjacentsOpen(pipesIter);
+        }
 
-        List<Coord2D> TraverseOpenPositions2(List<Coord2D> openPositions)
+        List<Coord2D> ProcessAdjacentsOpen(List<Coord2D> openPositions)
         {
             List<Coord2D> retVal = new();
-
             var maxX = Map.Keys.Max(p => p.x);
             var maxY = Map.Keys.Max(p => p.y);
 
+            // Using this foreach is much faster than SelectMany
             foreach (var pos in openPositions)
             {
-                var adjacentSet = pos.GetNeighbors().Where(n => n.x >= 0 && n.x <= maxX && n.y >= 0 && n.y <= maxY).Where(p => Map[p].distance == 999999).ToList();
+                // Using MaxX MaxY is much faster than Map.Keys.Contains
+                var adjacentSet = pos.GetNeighbors().Where(n => n.x >= 0 && n.x <= maxX && n.y >= 0 && n.y <= maxY)
+                                                    .Where(p => Map[p].distance == 999999).ToList();
                 foreach (var pipe in adjacentSet)
                 {
                     Map[pipe].distance = -1;
@@ -160,101 +146,14 @@ namespace AoC23.Day10
 
             return retVal;
         }
-
-        void TraverseOpenPositionsIter(List<Coord2D> pipes)
-        {
-            var pipesIter = TraverseOpenPositions2(pipes);
-            int iters = 0;
-            while (pipesIter.Count > 0)
-            {
-                iters++;
-                pipesIter = TraverseOpenPositions2(pipesIter);
-                if (iters % 100 == 0)
-                {
-                    Console.WriteLine("Iters : " + iters.ToString() + " - Count : " + pipesIter.Count.ToString());
-                }
-            }
-        }
-
-        void TraverseOpenPositions(List<Coord2D> openPositions)
-        {
-            if (openPositions.Count == 0)
-                return;
-
-            var adjacentSet = openPositions.SelectMany(x => x.GetNeighbors())
-                                      .Where(p => Map.Keys.Contains(p))
-                                      .Where(p => Map[p].distance == 999999).ToList();
-            
-
-            foreach (var pipe in adjacentSet)
-                    Map[pipe].distance = -1;  
-
-            TraverseOpenPositions(adjacentSet);
-        }
-
-        void PrintMap()
-        {
-            int rows = Map.Keys.Max(p => p.y);
-            int cols = Map.Keys.Max(p => p.x);
-
-            for (int r = 0; r <= rows; r++)
-            {
-                for (int c = 0; c <= cols; c++)
-                {
-                    Coord2D key = (c, r);
-                    Console.Write(Map[key].Symbol.ToString());
-                }
-                Console.WriteLine();
-            }
-        }
-
-        void PrintDist()
-        {
-            int rows = Map.Keys.Max(p => p.y);
-            int cols = Map.Keys.Max(p => p.x);
-
-            for (int r = 0; r <= rows; r++)
-            {
-                for (int c = 0; c <= cols; c++)
-                {
-                    Coord2D key = (c, r);
-                    if(Map[key].distance< 999999)
-                        Console.Write((Map[key].distance %10).ToString());
-                    else
-                        Console.Write(".");
-                }
-                Console.WriteLine();
-            }
-        }
-
-        void PrintEnclosedOpen()
-        {
-            int rows = Map.Keys.Max(p => p.y);
-            int cols = Map.Keys.Max(p => p.x);
-
-            for (int r = 0; r <= rows; r++)
-            {
-                for (int c = 0; c <= cols; c++)
-                {
-                    Coord2D key = (c, r);
-                    if (Map[key].distance == 999999)
-                        Console.Write("E");
-                    else if (Map[key].distance == -1)
-                        Console.Write("o");
-                    else
-                        Console.Write("x");
-                    
-                }
-                Console.WriteLine();
-            }
-        }
-
+        
         int SolvePart1()
         {
-            TraverseMaze(new List<Coord2D> { StartPos }, 1);
+            TraverseMazeIter(new List<Coord2D> { StartPos }, 1);
             return Map.Values.Where(x => x.distance < 999999).Max(x => x.distance);
         }
 
+        // Where the magic happens - this ZOOMS IN the original input to be able to see open position connection between pipes
         void ExpandGrid()
         {
             List<string> newInput = new();
@@ -322,32 +221,28 @@ namespace AoC23.Day10
 
             StartPos = (StartPos.x * 3 +1, StartPos.y * 3+1);
             Map.Clear();
+            // Reinterpret the problem with the zoomed in map
             ParseInput(newInput, false);
             Map[StartPos].distance = 0;
         }
 
         int SolvePart2()
         {
-            Console.WriteLine("Traversing solution");
             TraverseMazeIter(new List<Coord2D> { StartPos }, 1);    // Find the originalMap solution
 
+            // Keep a copy of the solved original map
             var originalMap = new Dictionary<Coord2D, PipePosition>();
             foreach (var k in Map.Keys)
                 originalMap[k] = Map[k];
-
             
             // Zoom in
-            ExpandGrid();   // We zoom in
-            
-            Console.WriteLine(Map.Values.Where(x => x.adjacentPipes.Count > 0).Count().ToString());
+            ExpandGrid(); 
 
             // Find the solution of zoomed map
-            Console.WriteLine("Traversing zoomed solution");
             TraverseMazeIter(new List<Coord2D> { StartPos }, 1);
 
-            var notBelongingToLoop = Map.Keys.Where(x => Map[x].distance == 999999).ToList();
-            // Find the ones that do not belong to the group and that can traverse to touch an edge
-
+            // To find all the positions that are closed, we find the ones that are open
+            // to do so, we start from the positions that are in the edge and do not belong to the loop (distance = Max)
             List<Coord2D> openPosSeed = new();
             int rows = Map.Keys.Max(p => p.y);
             int cols = Map.Keys.Max(p => p.x);
@@ -380,10 +275,11 @@ namespace AoC23.Day10
                 }
             }
 
-            Console.WriteLine("Traversing open cells");
+            // Now we find all the connected positions that are not in the loop
+            // starting from that seed
             TraverseOpenPositionsIter(openPosSeed);
 
-            Console.WriteLine("Counting");
+            // We get back to the original map , we will check if each non loop position maps to an open position in the zoomed map
             var originalNotBelong = originalMap.Keys.Where(x => originalMap[x].distance == 999999).ToList();
             int countClosed = 0;
             foreach (var k in originalNotBelong)
