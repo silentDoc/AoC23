@@ -120,7 +120,7 @@ namespace AoC23
         static string day10(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
-            Day10.PipeRunner runner = new();
+            Day10.PipeRunnerOpt runner = new();
             runner.ParseInput(lines);
             
             return runner.Solve(part).ToString();
