@@ -6,9 +6,9 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 9;
+            int day = 10;
             int part = 1;
-            bool test = false;
+            bool test = !false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -27,6 +27,7 @@ namespace AoC23
                 7 => day7(input, part),
                 8 => day8(input, part),
                 9 => day9(input, part),
+                10 => day10(input, part),
                 _ => throw new ArgumentException("Wrong day number - unimplemented")
             };
             
@@ -114,6 +115,13 @@ namespace AoC23
             Day09.SequenceAnalyzer analyzer = new();
             analyzer.ParseInput(lines);
             return analyzer.Solve(part).ToString();
+        }
+
+        static string day10(string input, int part)
+        {
+            var lines = File.ReadAllLines(input).ToList();
+            
+            return "";
         }
     }
 }
