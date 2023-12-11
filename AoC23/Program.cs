@@ -28,6 +28,7 @@ namespace AoC23
                 8 => day8(input, part),
                 9 => day9(input, part),
                 10 => day10(input, part),
+                11 => day11(input, part),
                 _ => throw new ArgumentException("Wrong day number - unimplemented")
             };
             
@@ -124,6 +125,13 @@ namespace AoC23
             runner.ParseInput(lines);
             
             return runner.Solve(part).ToString();
+        }
+
+        static string day11(string input, int part)
+        {
+            var lines = File.ReadAllLines(input).ToList();
+
+            return 1.ToString();
         }
     }
 }
