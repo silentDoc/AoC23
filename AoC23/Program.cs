@@ -7,7 +7,7 @@ namespace AoC23
         static void Main(string[] args)
         {
             int day = 11;
-            int part = 1;
+            int part = 2;
             bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
@@ -131,9 +131,9 @@ namespace AoC23
         {
             var lines = File.ReadAllLines(input).ToList();
             Day11.GalaxyTraveler traveler = new();
-            traveler.ParseInput(lines);
+            traveler.ParseInput(lines, part);
 
-            return traveler.Solve(part).ToString();
+            return traveler.Solve().ToString();
         }
     }
 }
