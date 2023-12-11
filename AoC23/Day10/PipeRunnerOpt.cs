@@ -4,10 +4,10 @@ namespace AoC23.Day10
 {
     public class PipeRunnerOpt
     {
-        Coord2D posNorth = new Coord2D(0, -1);
-        Coord2D posSouth = new Coord2D(0, 1);
-        Coord2D posEast = new Coord2D(1 , 0);
-        Coord2D posWest = new Coord2D(-1, 0);
+        readonly Coord2D NORTH = new Coord2D(0, -1);
+        readonly Coord2D SOUTH = new Coord2D(0, 1);
+        readonly Coord2D EAST  = new Coord2D(1 , 0);
+        readonly Coord2D WEST  = new Coord2D(-1, 0);
 
         const int DIST_MAX = 999999;
 
@@ -17,12 +17,12 @@ namespace AoC23.Day10
         List<Coord2D> ConnectedPositions(char pipeSymbol)
             => pipeSymbol switch
             {
-                '|' => new List<Coord2D> { posNorth, posSouth },
-                '-' => new List<Coord2D> { posEast, posWest },
-                'L' => new List<Coord2D> { posNorth, posEast },
-                'J' => new List<Coord2D> { posNorth, posWest },
-                'F' => new List<Coord2D> { posSouth, posEast },
-                '7' => new List<Coord2D> { posSouth, posWest },
+                '|' => new List<Coord2D> { NORTH, SOUTH },
+                '-' => new List<Coord2D> { EAST , WEST },
+                'L' => new List<Coord2D> { NORTH, EAST },
+                'J' => new List<Coord2D> { NORTH, WEST },
+                'F' => new List<Coord2D> { SOUTH, EAST },
+                '7' => new List<Coord2D> { SOUTH, WEST },
                 '.' => new List<Coord2D> { },
                 'S' => new List<Coord2D> { },
                 '_' => throw new Exception("Invalid symbol")
@@ -65,10 +65,10 @@ namespace AoC23.Day10
             var adjacents = Map.Keys.Where(x => StartPos.GetNeighbors().Contains(x));
             var connected = adjacents.Where(a => Map[a].adjacentPipes.Contains(StartPos)).ToList();
 
-            var bWest = connected.Any(x => x + posEast == StartPos);
-            var bEast = connected.Any(x => x + posWest == StartPos);
-            var bNorth = connected.Any(x => x + posSouth == StartPos);
-            var bSouth = connected.Any(x => x + posNorth == StartPos);
+            var bWest = connected.Any(x => x + EAST == StartPos);
+            var bEast = connected.Any(x => x + WEST == StartPos);
+            var bNorth = connected.Any(x => x + SOUTH == StartPos);
+            var bSouth = connected.Any(x => x + NORTH == StartPos);
 
             var startSym = FindStartSymbol((bEast, bWest, bNorth, bSouth));
             var adjacentDirs = ConnectedPositions(startSym);
@@ -98,7 +98,7 @@ namespace AoC23.Day10
             return adjacentSet;
         }
 
-        // Cross counters for Part 2
+        // Crossing counters for Part 2
         int CountHCrossings(Coord2D pos, int start, int end)
         {
             int count = 0;
@@ -180,34 +180,12 @@ namespace AoC23.Day10
 
         bool IsClosedPosition(Coord2D pos, int MaxX, int MaxY)
         {
-            int previousH = 0;
-            int afterH = 0;
-
-            int previousV = 0;
-            int afterV = 0;
-
             if ( pos.x == 0 || pos.y == 0 || pos.x == MaxX || pos.y == MaxY)
                 return false;
 
-            previousH = CountHCrossings(pos, 0, pos.x-1);
-            afterH = CountHCrossings(pos, pos.x + 1, MaxX);
-
-            if (previousH == 0 || afterH == 0)
-                return false;
-
-            if (previousH % 2 == 0 || afterH % 2 == 0)
-                return false;
-
-            previousV = CountVCrossings(pos, 0, pos.y - 1);
-            afterV = CountVCrossings(pos, pos.y + 1, MaxY);
-
-            if (previousV == 0 || afterV == 0)
-                return false;
-
-            if (previousV % 2 == 0 || afterV % 2 == 0)
-                return false;
-
-            return true;
+            List<int> crossings = new() { CountHCrossings(pos, 0, pos.x - 1) , CountHCrossings(pos, pos.x + 1, MaxX) ,
+                                          CountVCrossings(pos, 0, pos.y - 1) , CountVCrossings(pos, pos.y + 1, MaxY)};
+            return !crossings.Any(p => p % 2 == 0);
         }
         
         int SolvePart1()

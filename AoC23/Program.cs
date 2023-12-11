@@ -6,7 +6,7 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 11;
+            int day = 10;
             int part = 2;
             bool test = false;
 
