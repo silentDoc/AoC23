@@ -8,7 +8,7 @@ namespace AoC23
         {
             int day = 12;
             int part = 1;
-            bool test = !false;
+            bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -140,8 +140,10 @@ namespace AoC23
         static string day12(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
+            Day12.HotSpringChecker checker = new();
+            checker.ParseInput(lines);
 
-            return "";
+            return checker.Solve(part).ToString();
         }
     }
 }
