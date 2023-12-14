@@ -37,7 +37,8 @@ namespace AoC23.Day13
             subSet2.Reverse();
 
             //return subSet1.Zip(subSet2).Aggregate(true, (result, x) => result &= x.First.Equals(x.Second));
-            return !Enumerable.Range(0, subSet1.Count()).Select(i => subSet1[i].Equals(subSet2[i])).Any(x => x == false);
+            return !Enumerable.Range(0, numElements).Select(i => subSet1[i].Equals(subSet2[i]))
+                                                    .Any(x => !x);
         }
 
         public int FindMirrorRow(List<string> lines, int ignoreScore = -1)
@@ -46,9 +47,8 @@ namespace AoC23.Day13
             {
                 if (!CheckMirror<string>(lines, i))
                     continue;
-
                 if((i+1)*100 != ignoreScore)
-                    return i+1;
+                    return i + 1;
             }
             return -1;
         }
@@ -58,8 +58,7 @@ namespace AoC23.Day13
             // Vert
             for (int i = 0; i < lines[0].Length-1; i++)
             {
-                var check = lines.Select(x => CheckMirror<char>(x.ToList(), i)).ToList();
-                if (check.Any(x => x == false)) 
+                if(lines.Select(x => CheckMirror<char>(x.ToList(), i)).Any(x => !x))
                     continue;
                 if((i+1) != ignoreScore)
                     return i + 1;
@@ -95,11 +94,7 @@ namespace AoC23.Day13
                 for (int j = 0; j < lines[0].Length; j++)
                 {
                     var oldChar = sbuilders[i][j];
-
-                    if (sbuilders[i][j] == '#')
-                        sbuilders[i][j] = '.';
-                    else
-                        sbuilders[i][j] = '#';
+                    sbuilders[i][j] = oldChar == '#' ? '.' : '#';
 
                     List<string> patched = new List<string>();
                     sbuilders.ForEach(x => patched.Add(x.ToString()));
