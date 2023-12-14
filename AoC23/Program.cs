@@ -8,7 +8,7 @@ namespace AoC23
         {
             int day = 14;
             int part = 1;
-            bool test = !false;
+            bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -159,8 +159,11 @@ namespace AoC23
         static string day14(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
+            Day14.RockPlatform platform = new();
+            platform.ParseInput(lines);
 
-            return "";
+
+            return platform.Solve(part).ToString();
         }
     }
 }
