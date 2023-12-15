@@ -140,7 +140,7 @@ namespace AoC23.Day14
             var loopLength = cycle - firstSeen;
             var loopRepeats = (numCycles-firstSeen) / loopLength;
             var remaining = numCycles - (firstSeen + loopRepeats * loopLength);
-
+            
             for (var i = 0; i < remaining; i++)
                 Cycle();
 
