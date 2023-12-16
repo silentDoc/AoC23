@@ -6,9 +6,9 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 15;
-            int part = 2;
-            bool test = false;
+            int day = 16;
+            int part = 1;
+            bool test = !false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -33,6 +33,7 @@ namespace AoC23
                 13 => day13(input, part),
                 14 => day14(input, part),
                 15 => day15(input, part),
+                16 => day16(input, part),
                 _ => throw new ArgumentException("Wrong day number - unimplemented")
             };
             
@@ -171,6 +172,13 @@ namespace AoC23
             Day15.LavaFactoryHash hasher = new();
             hasher.ParseInput(lines);
             return hasher.Solve(part).ToString();
+        }
+
+        static string day16(string input, int part)
+        {
+            var lines = File.ReadAllLines(input).ToList();
+            return "";
+            //return hasher.Solve(part).ToString();
         }
 
     }
