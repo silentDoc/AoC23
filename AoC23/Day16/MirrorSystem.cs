@@ -12,6 +12,8 @@ namespace AoC23.Day16
     {
         Dictionary<Coord2D, char> Map = new();
         HashSet<Coord2D> Energized = new();
+        HashSet<(Coord2D, Coord2D)> AlreadyProcessed = new();
+
         Coord2D UP     = (0, -1);
         Coord2D DOWN   = (0,  1);
         Coord2D RIGHT  = (1,  0);
@@ -35,6 +37,9 @@ namespace AoC23.Day16
         void MoveBeam(Beam beam)
         {
             if (!Map.Keys.Contains(beam.Pos))   // End of the beam, out of map
+                return;
+
+            if (!AlreadyProcessed.Add((beam.Pos, beam.Dir)))   // We already processed a beam with this pos + dir
                 return;
 
             Energized.Add(beam.Pos);
@@ -127,6 +132,7 @@ namespace AoC23.Day16
             BeamList = new() { start};
             List<int> energized = new();
             Energized.Clear();
+            AlreadyProcessed.Clear();
 
             while (BeamList.Count>0)
             {
@@ -136,19 +142,6 @@ namespace AoC23.Day16
                 NextBeamList = new();
 
                 energized.Add(Energized.Count());
-                
-                // This below is probably the ugliest and nastiest end contition I ever coded
-                var jumpOut = false;
-                if (energized.Count > 50)
-                {
-                    jumpOut = true;
-                    for (int i = energized.Count - 20; i < energized.Count; i++)
-                        if (energized[i] != energized[i - 1])
-                            jumpOut = false;
-                }
-
-                if (jumpOut)
-                    break;
             }
             return Energized.Count();
         }
