@@ -86,12 +86,47 @@ namespace AoC23.Day16
             }
         }
 
-        int SolvePart1()
+        int SolvePart2()
         {
-            Beam start = new Beam() { Pos = (0, 0), Dir = RIGHT };
-            BeamList.Add(start);
+            HashSet<int> Entries = new();
 
+            var maxX = Map.Keys.Max(k => k.x);
+            var maxY = Map.Keys.Max(k => k.y);
+
+            // Corners
+            Entries.Add(Energize((0, 0), DOWN));
+            Entries.Add(Energize((0, 0), RIGHT));
+            Entries.Add(Energize((maxX, 0), DOWN));
+            Entries.Add(Energize((maxX, 0), LEFT));
+
+            Entries.Add(Energize((0, maxY), UP));
+            Entries.Add(Energize((0, maxY), RIGHT));
+            Entries.Add(Energize((maxX, maxY), UP));
+            Entries.Add(Energize((maxX, maxY), LEFT));
+
+            // Edges
+            for (int i = 1; i < maxX; i++)
+            {
+                Entries.Add(Energize((i, 0), DOWN));
+                Entries.Add(Energize((i, maxY), UP));
+            }
+
+            for (int i = 1; i < maxY; i++)
+            {
+                Entries.Add(Energize((0, i), RIGHT));
+                Entries.Add(Energize((maxX, i), LEFT));
+            }
+
+            return Entries.Max();
+        }
+
+        int Energize(Coord2D startPos, Coord2D startDir)
+        {
+            Beam start = new Beam() { Pos = startPos, Dir = startDir };
+
+            BeamList = new() { start};
             List<int> energized = new();
+            Energized.Clear();
 
             while (BeamList.Count>0)
             {
@@ -104,10 +139,10 @@ namespace AoC23.Day16
                 
                 // This below is probably the ugliest and nastiest end contition I ever coded
                 var jumpOut = false;
-                if (energized.Count > 100)
+                if (energized.Count > 50)
                 {
                     jumpOut = true;
-                    for (int i = energized.Count - 50; i < energized.Count; i++)
+                    for (int i = energized.Count - 20; i < energized.Count; i++)
                         if (energized[i] != energized[i - 1])
                             jumpOut = false;
                 }
@@ -115,11 +150,10 @@ namespace AoC23.Day16
                 if (jumpOut)
                     break;
             }
-
             return Energized.Count();
         }
 
         public int Solve(int part)
-            => part == 1 ? SolvePart1() : 0;
+            => part == 1 ? Energize((0,0), RIGHT) : SolvePart2();
     }
 }
