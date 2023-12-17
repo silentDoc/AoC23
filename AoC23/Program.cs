@@ -8,7 +8,7 @@ namespace AoC23
         {
             int day = 17;
             int part = 1;
-            bool test = !false;
+            bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -187,7 +187,9 @@ namespace AoC23
         static string day17(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
-            return "";
+            Day17.HeatLossMinimizer minimizer = new();
+            minimizer.ParseInput(lines);
+            return minimizer.Solve(part).ToString();
             //return hasher.Solve(part).ToString();
         }
 
