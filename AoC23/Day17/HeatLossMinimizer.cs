@@ -1,4 +1,5 @@
 ﻿using AoC23.Common;
+using System.IO;
 
 namespace AoC23.Day17
 {
@@ -78,7 +79,7 @@ namespace AoC23.Day17
         // The twist is that we will consider that a tile is visited if the current tile has
         //    less cost than current, with same direction as current, will less or equal streak.
         // This can be seen in the elements of the priority queue and visited dictionary (not hashmap because we need costs)
-        int ShortestPath(Coord2D start, Coord2D startDir, Coord2D end)
+        int ShortestPath(Coord2D start, Coord2D startDir, Coord2D end, int part = 1)
         {
             var priorityQueue = new PriorityQueue<SearchState, int>();
             Dictionary<SearchState, int> visited = new();
@@ -88,6 +89,9 @@ namespace AoC23.Day17
             priorityQueue.Enqueue(startState, 0);
 
             int minCostBFS = 999999;
+
+            int maxStreak = part == 1 ? 3 : 10;
+            int minStreak = part == 1 ? 0 : 4;
 
             while (priorityQueue.Count > 0)
             {
@@ -99,13 +103,15 @@ namespace AoC23.Day17
                 if (minCostBFS < currentCost)
                     continue;
 
-                if (currentPos == end)
+                if (currentPos == end && currentStreak >= minStreak)
                     return currentCost;
 
                 // Find possible new directions
                 List<Coord2D> nextDirs = new(){currentDir, TurnLeft(currentDir), TurnRight(currentDir)};
-                if (currentStreak >= 3)
+                if (currentStreak >= maxStreak)
                     nextDirs.Remove(currentDir);
+                if (currentStreak < minStreak)
+                    nextDirs = new() { currentDir };
 
                 int nextStreak = 0;
                 foreach (var nextDir in nextDirs)
@@ -138,20 +144,20 @@ namespace AoC23.Day17
             return minCostBFS;
         }
 
-        int MinimizeLoss()
+        int MinimizeLoss(int part)
         {
             Coord2D startPos = (0, 0);
             Coord2D endPos = (Map.Keys.Max(p => p.x), Map.Keys.Max(p => p.y));
             Coord2D dirRight = (1, 0);
             Coord2D dirDown = (1, 0);
 
-            var min1 = ShortestPath(startPos, dirRight, endPos);
-            var min2 = ShortestPath(startPos, dirDown, endPos);
+            var min1 = ShortestPath(startPos, dirRight, endPos, part);
+            var min2 = ShortestPath(startPos, dirDown, endPos, part);
 
             return Math.Min(min1, min2);
         }
 
         public int Solve(int part)
-            => MinimizeLoss();
+            => MinimizeLoss(part);
     }
 }

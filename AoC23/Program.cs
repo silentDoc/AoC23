@@ -7,7 +7,7 @@ namespace AoC23
         static void Main(string[] args)
         {
             int day = 17;
-            int part = 1;
+            int part = 2;
             bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
@@ -190,7 +190,6 @@ namespace AoC23
             Day17.HeatLossMinimizer minimizer = new();
             minimizer.ParseInput(lines);
             return minimizer.Solve(part).ToString();
-            //return hasher.Solve(part).ToString();
         }
 
     }
