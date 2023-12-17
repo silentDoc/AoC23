@@ -44,34 +44,7 @@ namespace AoC23.Day16
 
             Energized.Add(beam.Pos);
 
-            if (Map[beam.Pos] == '.' || 
-               (Map[beam.Pos] == '-' && (beam.Dir == RIGHT || beam.Dir == LEFT)) ||
-               (Map[beam.Pos] == '|' && (beam.Dir == UP || beam.Dir == DOWN)))
-            {
-                beam.Pos += beam.Dir;
-                NextBeamList.Add(beam);
-                return;
-            }
-
-            if (Map[beam.Pos] == '/' || Map[beam.Pos] == '\\')
-            {
-                beam.Dir = (beam.Dir.x, beam.Dir.y, Map[beam.Pos]) switch
-                {
-                    (1, 0, '/') => UP,
-                    (-1, 0, '/') => DOWN,
-                    (0, 1, '/') => LEFT,
-                    (0, -1, '/') => RIGHT,
-                    (1, 0, '\\') => DOWN,
-                    (-1, 0, '\\') => UP,
-                    (0, 1, '\\') => RIGHT,
-                    (0, -1, '\\') => LEFT,
-                    (_, _, _) => throw new Exception("Invalid tuple resolving turn")
-                };
-                beam.Pos += beam.Dir;
-                NextBeamList.Add(beam);
-                return;
-            }
-
+            // Splits first
             if (Map[beam.Pos] == '-' && (beam.Dir == DOWN || beam.Dir == UP))
             {
                 Beam split1 = new Beam() { Pos = beam.Pos + LEFT, Dir = LEFT };
@@ -89,6 +62,21 @@ namespace AoC23.Day16
                 NextBeamList.Add(split2);
                 return;
             }
+
+            beam.Dir = (beam.Dir.x, beam.Dir.y, Map[beam.Pos]) switch
+            {
+                (1, 0, '/') => UP,
+                (-1, 0, '/') => DOWN,
+                (0, 1, '/') => LEFT,
+                (0, -1, '/') => RIGHT,
+                (1, 0, '\\') => DOWN,
+                (-1, 0, '\\') => UP,
+                (0, 1, '\\') => RIGHT,
+                (0, -1, '\\') => LEFT,
+                (_ ,_ , _ ) => beam.Dir
+            };
+            beam.Pos += beam.Dir;
+            NextBeamList.Add(beam);
         }
 
         int SolvePart2()
@@ -130,7 +118,7 @@ namespace AoC23.Day16
             Beam start = new Beam() { Pos = startPos, Dir = startDir };
 
             BeamList = new() { start};
-            List<int> energized = new();
+            //List<int> energized = new();
             Energized.Clear();
             AlreadyProcessed.Clear();
 
@@ -140,8 +128,7 @@ namespace AoC23.Day16
                     MoveBeam(beam);
                 BeamList = NextBeamList;
                 NextBeamList = new();
-
-                energized.Add(Energized.Count());
+              //  energized.Add(Energized.Count());
             }
             return Energized.Count();
         }
