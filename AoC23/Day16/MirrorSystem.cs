@@ -118,7 +118,6 @@ namespace AoC23.Day16
             Beam start = new Beam() { Pos = startPos, Dir = startDir };
 
             BeamList = new() { start};
-            //List<int> energized = new();
             Energized.Clear();
             AlreadyProcessed.Clear();
 
@@ -128,7 +127,6 @@ namespace AoC23.Day16
                     MoveBeam(beam);
                 BeamList = NextBeamList;
                 NextBeamList = new();
-              //  energized.Add(Energized.Count());
             }
             return Energized.Count();
         }
