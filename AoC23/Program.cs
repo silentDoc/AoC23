@@ -8,7 +8,7 @@ namespace AoC23
         {
             int day = 18;
             int part = 2;
-            bool test = false;
+            bool test = !false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";

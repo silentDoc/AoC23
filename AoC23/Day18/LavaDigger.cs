@@ -119,24 +119,24 @@ namespace AoC23.Day18
             }
 
             // Calculate the shoelace formula https://en.wikipedia.org/wiki/Shoelace_formula
-            long shoelaceAreaSum = 0;
-            long shoelaceAreaSub = 0;
+            long sum = 0;
+            long sub = 0;
             for (int i = 0; i < vertices.Count - 1; i++)
             {
-                shoelaceAreaSum += ((long) vertices[i].x) * ((long) vertices[i + 1].y);
-                shoelaceAreaSub += ((long) vertices[i + 1].x) * ((long) vertices[i].y);
+                sum += ((long) vertices[i].x) * ((long) vertices[i + 1].y);
+                sub += ((long) vertices[i + 1].x) * ((long) vertices[i].y);
             }
 
-            shoelaceAreaSum += ((long)vertices[vertices.Count - 1].x) * ((long)vertices[0].y);
-            shoelaceAreaSub += ((long)vertices[0].x) * ((long)vertices[vertices.Count - 1].y);
+            sum += ((long)vertices.Last().x) * ((long)vertices[0].y);
+            sub += ((long)vertices[0].x) * ((long)vertices.Last().y);
 
-            long shoeLaceArea = Math.Abs(shoelaceAreaSum - shoelaceAreaSub) / 2;
+            long innerArea = Math.Abs(sum - sub) / 2;
 
             // Now add perimeter. Pick's theorem : https://en.wikipedia.org/wiki/Pick%27s_theorem
             long perimeter = Instructions.Sum(x => x.Steps); // Start = end
-            long Area = shoeLaceArea + (perimeter / 2) - 1;
+            long Area = innerArea + (perimeter / 2);
 
-            return Area;
+            return Area+1;
         }
 
         public void ParseInput(List<string> lines)
