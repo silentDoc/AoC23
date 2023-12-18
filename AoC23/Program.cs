@@ -6,8 +6,8 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 16;
-            int part = 2;
+            int day = 18;
+            int part = 1;
             bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
@@ -196,8 +196,10 @@ namespace AoC23
         static string day18(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
+            Day18.LavaDigger digger = new();
+            digger.ParseInput(lines);
             
-            return "";
+            return digger.Solve(part).ToString();
         }
 
     }
