@@ -7,6 +7,19 @@ namespace AoC23.Day18
         public Coord2D Direction;
         public int Steps;
         public string Color;
+
+        public void TransformPart2()
+        {
+            Steps = int.Parse(Color.Substring(0,5), System.Globalization.NumberStyles.HexNumber);
+            Direction = Color.Last() switch
+            {
+                '0' => (1, 0),
+                '1' => (0, 1),
+                '2' => (-1, 0),
+                '3' => (0, -1),
+                _ => throw new Exception("Invalid direction char: " + Color.Last().ToString() )
+            };
+        }
     }
 
     internal class LavaDigger
@@ -17,8 +30,7 @@ namespace AoC23.Day18
         Coord2D LEFT = (-1, 0);
 
         List<Instruction> Instructions = new();
-        
-        HashSet<Coord2D> Map = new();
+        List<Coord2D> Map = new();
 
         Instruction ParseLine(string line)
         {
@@ -84,17 +96,53 @@ namespace AoC23.Day18
                 Map.Add(f);
         }
 
-        public int SolvePart1()
+        public long SolvePart1()
         {
             BuildMap();
+            Map = Map.Distinct().ToList();  // The last position is the start position
             FillMap();
             return Map.Count();
+        }
+
+        public long SolvePart2()
+        {
+            foreach (var ins in Instructions)
+                ins.TransformPart2();
+            
+            Coord2D current = (0, 0);
+            List<Coord2D> vertices = new() { current };
+
+            foreach (var ins in Instructions)
+            {
+                current += ins.Direction * ins.Steps;
+                vertices.Add(current);
+            }
+
+            // Calculate the shoelace formula https://en.wikipedia.org/wiki/Shoelace_formula
+            long shoelaceAreaSum = 0;
+            long shoelaceAreaSub = 0;
+            for (int i = 0; i < vertices.Count - 1; i++)
+            {
+                shoelaceAreaSum += ((long) vertices[i].x) * ((long) vertices[i + 1].y);
+                shoelaceAreaSub += ((long) vertices[i + 1].x) * ((long) vertices[i].y);
+            }
+
+            shoelaceAreaSum += ((long)vertices[vertices.Count - 1].x) * ((long)vertices[0].y);
+            shoelaceAreaSub += ((long)vertices[0].x) * ((long)vertices[vertices.Count - 1].y);
+
+            long shoeLaceArea = Math.Abs(shoelaceAreaSum - shoelaceAreaSub) / 2;
+
+            // Now add perimeter. Pick's theorem : https://en.wikipedia.org/wiki/Pick%27s_theorem
+            long perimeter = Instructions.Sum(x => x.Steps); // Start = end
+            long Area = shoeLaceArea + (perimeter / 2) - 1;
+
+            return Area;
         }
 
         public void ParseInput(List<string> lines)
             => lines.ForEach(x => Instructions.Add(ParseLine(x)) );
 
-        public int Solve(int part)
-            => SolvePart1();
+        public long Solve(int part)
+            => part == 1 ? SolvePart1() : SolvePart2();
     }
 }
