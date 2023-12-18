@@ -6,7 +6,7 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 17;
+            int day = 16;
             int part = 2;
             bool test = false;
 
@@ -35,6 +35,7 @@ namespace AoC23
                 15 => day15(input, part),
                 16 => day16(input, part),
                 17 => day17(input, part),
+                18 => day18(input, part),
                 _ => throw new ArgumentException("Wrong day number - unimplemented")
             };
             
@@ -190,6 +191,13 @@ namespace AoC23
             Day17.HeatLossMinimizer minimizer = new();
             minimizer.ParseInput(lines);
             return minimizer.Solve(part).ToString();
+        }
+
+        static string day18(string input, int part)
+        {
+            var lines = File.ReadAllLines(input).ToList();
+            
+            return "";
         }
 
     }
