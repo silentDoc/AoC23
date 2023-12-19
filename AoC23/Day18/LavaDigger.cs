@@ -4,9 +4,9 @@ namespace AoC23.Day18
 {
     record Instruction
     {
-        public Coord2D Direction;
+        public Coord2D Direction = (0,0);
         public int Steps;
-        public string Color;
+        public string Color = "";
 
         public void TransformPart2()
         {
@@ -42,7 +42,7 @@ namespace AoC23.Day18
                 "D" => DOWN,
                 "L" => LEFT,
                 "R" => RIGHT,
-                "_" => throw new Exception("Invalid direction")
+                _ => throw new Exception("Invalid direction")
             };
 
             ins.Steps = int.Parse(groups[1]);

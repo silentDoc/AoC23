@@ -275,7 +275,8 @@
 
                     if (rule.compareType == CompareType.Direct && rule.outcome == Outcome.Accept)
                     {
-                        total += pass.Combs();
+                        if(pass!=null)
+                            total += pass.Combs();
                         break;
                     }
                     if (rule.compareType == CompareType.Direct && rule.outcome == Outcome.Jump)

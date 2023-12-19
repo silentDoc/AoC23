@@ -25,7 +25,7 @@ namespace AoC23.Day10
                 '7' => new List<Coord2D> { SOUTH, WEST },
                 '.' => new List<Coord2D> { },
                 'S' => new List<Coord2D> { },
-                '_' => throw new Exception("Invalid symbol")
+                _ => throw new Exception("Invalid symbol")
             };
 
         void ParseLine(string line, int row)
