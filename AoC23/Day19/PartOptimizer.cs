@@ -1,58 +1,9 @@
 ﻿namespace AoC23.Day19
 {
-    static class Part2Singleton
-    {
-        static List<PartRange> accepted = new();
-        static List<string> froms = new();
-
-        static public void Accept(PartRange range, string from)
-        {
-            accepted.Add(range);
-            froms.Add(from);
-        }
-
-        static void Log()
-        {
-            foreach (var i in Enumerable.Range(0, accepted.Count))
-                Console.WriteLine(froms[i] + " : " + accepted[i].ToString());
-        }
-
-        static bool RemoveContained(PartRange range)
-        {
-            var toRemove = accepted.Where(x => x!=range && range.Contains(x)).ToList();
-            if (toRemove.Count == 0)
-                return false;
-
-            foreach (var r in toRemove)
-                accepted.Remove(r);
-            return true;
-        }
-
-        static public long ReturnAllCombinations()
-        {
-            Log();
-            var stop = false;
-            while (!stop)
-            {
-                var removed = false;
-                foreach (var r in accepted)
-                {
-                    removed = RemoveContained(r);
-                    if (removed)
-                        break;
-                }
-                stop = !removed;
-            }
-            Console.WriteLine();
-            Log();
-            return accepted.Sum(x => x.Combs());
-        }
-    }
-
     enum CompareType
-    { 
+    {
         Greater,
-        Less, 
+        Less,
         Direct
     }
 
@@ -262,20 +213,6 @@
 
         public long Combs()
             => ((long)(x.max - x.min + 1)) * ((long)(m.max - m.min + 1)) * ((long)(a.max - a.min + 1)) * ((long)(s.max - s.min + 1));
-
-        public string ToString()
-            =>  "x = [" + x.min.ToString() + " - " + x.max.ToString() + "] " +
-                "m = [" + m.min.ToString() + " - " + m.max.ToString() + "] " +
-                "a = [" + a.min.ToString() + " - " + a.max.ToString() + "] " +
-                "s = [" + s.min.ToString() + " - " + s.max.ToString() + "] ";
-
-        public bool Contains(PartRange other)
-        {
-            return x.min <= other.x.min && x.max >= other.x.max &&
-                    m.min <= other.m.min && m.max >= other.m.max &&
-                    a.min <= other.a.min && a.max >= other.a.max &&
-                    s.min <= other.s.min && s.max >= other.s.max;
-        }
     }
 
     internal class PartOptimizer
@@ -320,8 +257,8 @@
             // We build the tree
             PartRange start = new();
             Queue<(PartRange, Workflow)> queue = new();
-
             queue.Enqueue((start, Workflows["in"]));
+            long total = 0;
 
             while(queue.Count>0)
             {
@@ -338,7 +275,7 @@
 
                     if (rule.compareType == CompareType.Direct && rule.outcome == Outcome.Accept)
                     {
-                        Part2Singleton.Accept(pass, flow.Name);
+                        total += pass.Combs();
                         break;
                     }
                     if (rule.compareType == CompareType.Direct && rule.outcome == Outcome.Jump)
@@ -354,7 +291,7 @@
                         if (rule.outcome == Outcome.Accept)
                         {
                             if (pass != null)
-                                Part2Singleton.Accept(pass, flow.Name);
+                                total += pass.Combs();
                         }
                         if (rule.outcome == Outcome.Jump)
                         {
@@ -366,7 +303,7 @@
                 }
             }
 
-            return Part2Singleton.ReturnAllCombinations();
+            return total;
         }
 
         public long Solve(int part = 1)
