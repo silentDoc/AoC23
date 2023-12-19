@@ -280,14 +280,17 @@
 
     internal class PartOptimizer
     {
-        List<Workflow> Workflows = new();
+        Dictionary<string, Workflow> Workflows = new();
         List<Part> Parts = new();
 
         public void ParseInput(List<string> lines)
         {
             var sep = lines.IndexOf("");
-            for(int i=0; i<sep; i++) 
-                Workflows.Add(new Workflow(lines[i]));
+            for (int i = 0; i < sep; i++)
+            {
+                var wf = new Workflow(lines[i]);
+                Workflows[wf.Name] = wf;
+            }
 
             for (int i = sep + 1; i < lines.Count; i++)
                 Parts.Add(new Part(lines[i]));
@@ -299,12 +302,10 @@
 
             foreach (var part in Parts)
             {
-                Workflow current = Workflows.First(x => x.Name == "in");
-                var result = current.RunWorkflow(part);
+                var result = Workflows["in"].RunWorkflow(part);
                 while (result.outcome == Outcome.Jump)
                 {
-                    current = Workflows.First(x => x.Name == result.dest);
-                    result = current.RunWorkflow(part);
+                    result = Workflows[result.dest].RunWorkflow(part);
                 }
 
                 if (result.outcome == Outcome.Accept)
@@ -317,11 +318,10 @@
         long CheckCombinations()
         {
             // We build the tree
-            Workflow current = Workflows.First(x => x.Name == "in");
             PartRange start = new();
             Queue<(PartRange, Workflow)> queue = new();
 
-            queue.Enqueue((start, current));
+            queue.Enqueue((start, Workflows["in"]));
 
             while(queue.Count>0)
             {
@@ -336,12 +336,31 @@
                     
                     rule.TestRange(range, out pass, out fail);
 
-                    if (rule.outcome == Outcome.Accept && pass is not null)
-                        Part2Singleton.Accept(pass, flow.Name);
-                    else if (rule.outcome == Outcome.Jump && pass is not null)
+                    if (rule.compareType == CompareType.Direct && rule.outcome == Outcome.Accept)
                     {
-                        var newFlow = Workflows.First(x => x.Name == rule.destination);
-                        queue.Enqueue((pass, newFlow));
+                        Part2Singleton.Accept(pass, flow.Name);
+                        break;
+                    }
+                    if (rule.compareType == CompareType.Direct && rule.outcome == Outcome.Jump)
+                    {
+                        if (pass != null)
+                            queue.Enqueue((pass, Workflows[rule.destination]));
+                        range = fail;
+                        continue;
+                    }
+
+                    if (rule.compareType != CompareType.Direct)
+                    {
+                        if (rule.outcome == Outcome.Accept)
+                        {
+                            if (pass != null)
+                                Part2Singleton.Accept(pass, flow.Name);
+                        }
+                        if (rule.outcome == Outcome.Jump)
+                        {
+                            if (pass != null)
+                                queue.Enqueue((pass, Workflows[rule.destination]));
+                        }
                         range = fail;   // to next rule
                     }
                 }
