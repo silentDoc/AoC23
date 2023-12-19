@@ -1,5 +1,54 @@
 ﻿namespace AoC23.Day19
 {
+    static class Part2Singleton
+    {
+        static List<PartRange> accepted = new();
+        static List<string> froms = new();
+
+        static public void Accept(PartRange range, string from)
+        {
+            accepted.Add(range);
+            froms.Add(from);
+        }
+
+        static void Log()
+        {
+            foreach (var i in Enumerable.Range(0, accepted.Count))
+                Console.WriteLine(froms[i] + " : " + accepted[i].ToString());
+        }
+
+        static bool RemoveContained(PartRange range)
+        {
+            var toRemove = accepted.Where(x => x!=range && range.Contains(x)).ToList();
+            if (toRemove.Count == 0)
+                return false;
+
+            foreach (var r in toRemove)
+                accepted.Remove(r);
+            return true;
+        }
+
+        static public long ReturnAllCombinations()
+        {
+            Log();
+            var stop = false;
+            while (!stop)
+            {
+                var removed = false;
+                foreach (var r in accepted)
+                {
+                    removed = RemoveContained(r);
+                    if (removed)
+                        break;
+                }
+                stop = !removed;
+            }
+            Console.WriteLine();
+            Log();
+            return accepted.Sum(x => x.Combs());
+        }
+    }
+
     enum CompareType
     { 
         Greater,
@@ -53,6 +102,7 @@
                 outcome = Outcome.Jump;
         }
 
+        // Part 1
         public bool Test(Part part)
         {
             if (compareType == CompareType.Direct)
@@ -68,6 +118,75 @@
             };
 
             return compareType == CompareType.Less ? op < value : op > value;
+        }
+
+        public void TestRange(PartRange partRange, out PartRange? passes, out PartRange? fails)
+        {
+            passes = null;
+            fails = null;
+
+            if (compareType == CompareType.Direct)
+            {
+                passes = new PartRange(partRange);
+                return;
+            }
+
+            var op = operand switch
+            {
+                'x' => partRange.x,
+                'm' => partRange.m,
+                'a' => partRange.a,
+                's' => partRange.s,
+                _ => throw new Exception("Invalid operand")
+            };
+
+            if (value > op.min && value < op.max)
+            {
+                passes = new PartRange(partRange);
+                fails = new PartRange(partRange);
+
+                (int min, int max) passR;
+                (int min, int max) failR;
+
+                // We will split into two ranges
+                passR.min = (compareType == CompareType.Less) ? op.min : value + 1;
+                passR.max = (compareType == CompareType.Less) ? value-1 : op.max;
+                failR.min = (compareType == CompareType.Less) ? value : op.min;
+                failR.max = (compareType == CompareType.Less) ? op.max : value;
+
+                switch (operand)
+                {
+                    case 'x':
+                        passes.x = passR;
+                        fails.x = failR;
+                        break;
+                    case 'm':
+                        passes.m = passR;
+                        fails.m = failR;
+                        break;
+                    case 'a':
+                        passes.a = passR;
+                        fails.a = failR;
+                        break;
+                    case 's':
+                        passes.s = passR;
+                        fails.s = failR;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else if (value > op.max)
+            {
+                passes = (compareType == CompareType.Less) ? new PartRange(partRange) : null;
+                fails = (compareType == CompareType.Less) ? null : new PartRange(partRange);
+            }
+            else if (value < op.min)
+            {
+                passes = (compareType == CompareType.Less) ? null :  new PartRange(partRange);
+                fails = (compareType == CompareType.Less) ? new PartRange(partRange) : null;
+            }
+            return;
         }
     }
 
@@ -118,6 +237,47 @@
         }
     }
 
+    class PartRange
+    {
+        public (int min, int max) x;
+        public (int min, int max) m;
+        public (int min, int max) a;
+        public (int min, int max) s;
+
+        public PartRange()
+        {
+            x = (1, 4000);
+            m = (1, 4000);
+            a = (1, 4000);
+            s = (1, 4000);
+        }
+
+        public PartRange(PartRange other)
+        {
+            x = other.x;
+            m = other.m;
+            a = other.a;
+            s = other.s;
+        }
+
+        public long Combs()
+            => ((long)(x.max - x.min + 1)) * ((long)(m.max - m.min + 1)) * ((long)(a.max - a.min + 1)) * ((long)(s.max - s.min + 1));
+
+        public string ToString()
+            =>  "x = [" + x.min.ToString() + " - " + x.max.ToString() + "] " +
+                "m = [" + m.min.ToString() + " - " + m.max.ToString() + "] " +
+                "a = [" + a.min.ToString() + " - " + a.max.ToString() + "] " +
+                "s = [" + s.min.ToString() + " - " + s.max.ToString() + "] ";
+
+        public bool Contains(PartRange other)
+        {
+            return x.min <= other.x.min && x.max >= other.x.max &&
+                    m.min <= other.m.min && m.max >= other.m.max &&
+                    a.min <= other.a.min && a.max >= other.a.max &&
+                    s.min <= other.s.min && s.max >= other.s.max;
+        }
+    }
+
     internal class PartOptimizer
     {
         List<Workflow> Workflows = new();
@@ -154,8 +314,44 @@
             return Accepted.Sum( p => p.x) + Accepted.Sum(p => p.a) + Accepted.Sum(p => p.m) + Accepted.Sum(p => p.s);
         }
 
-        public int Solve(int part = 1)
-            => RunWorkflows();
+        long CheckCombinations()
+        {
+            // We build the tree
+            Workflow current = Workflows.First(x => x.Name == "in");
+            PartRange start = new();
+            Queue<(PartRange, Workflow)> queue = new();
+
+            queue.Enqueue((start, current));
+
+            while(queue.Count>0)
+            {
+                var (range, flow) = queue.Dequeue();
+
+                foreach(var rule in flow.Rules)
+                {
+                    if (range == null)
+                        break;
+                    PartRange? pass = null;
+                    PartRange? fail = null;
+                    
+                    rule.TestRange(range, out pass, out fail);
+
+                    if (rule.outcome == Outcome.Accept && pass is not null)
+                        Part2Singleton.Accept(pass, flow.Name);
+                    else if (rule.outcome == Outcome.Jump && pass is not null)
+                    {
+                        var newFlow = Workflows.First(x => x.Name == rule.destination);
+                        queue.Enqueue((pass, newFlow));
+                        range = fail;   // to next rule
+                    }
+                }
+            }
+
+            return Part2Singleton.ReturnAllCombinations();
+        }
+
+        public long Solve(int part = 1)
+            => part == 1 ? RunWorkflows() : CheckCombinations();
 
     }
 }
