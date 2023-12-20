@@ -6,9 +6,9 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 19;
-            int part = 2;
-            bool test = false;
+            int day = 20;
+            int part = 1;
+            bool test = !false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -37,6 +37,7 @@ namespace AoC23
                 17 => day17(input, part),
                 18 => day18(input, part),
                 19 => day19(input, part),
+                20 => day20(input, part),
                 _ => throw new ArgumentException("Wrong day number - unimplemented")
             };
             
@@ -209,6 +210,14 @@ namespace AoC23
             Day19.PartOptimizer optimizer = new();
             optimizer.ParseInput(lines);
             return optimizer.Solve(part).ToString();
+        }
+
+        static string day20(string input, int part)
+        {
+            var lines = File.ReadAllLines(input).ToList();
+            // Day20.Bla bla = new();
+            // blar.ParseInput(lines);
+            return ""; // bla.Solve(part).ToString();
         }
 
     }
