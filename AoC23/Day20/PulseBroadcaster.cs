@@ -1,6 +1,6 @@
 ﻿namespace AoC23.Day20
 {
-    enum NodeType
+    enum ModuleType
     { 
         Broadcaster, 
         FlipFlop, 
@@ -14,133 +14,141 @@
         Low
     }
 
-    class PulseNode
+    class Module
     {
         public string Name = "";
-        public NodeType Type = NodeType.Untyped;
+        public ModuleType Type = ModuleType.Untyped;
         public bool isOn = false;
-        public PulseType recentPulse = PulseType.Low;
-        public List<string> ConnectionsOut = new();
-        public Dictionary<string, PulseType> ConnectionsIn = new();
+        public List<string> Sources = new();
+        public Dictionary<string, PulseType> Dests = new();
     }
 
-    record PulseToCheck
+    record Pulse
     {
-        public string name;
-        public string from;
+        public string Dest = "";
+        public string Source = "";
         public PulseType type;
     }
 
     internal class PulseBroadcaster
     {
-        public Dictionary<string, PulseNode> Network = new();
+        public Dictionary<string, Module> Network = new();
         
         void ParseLine(string line)
         { 
             var parts = line.Split("->", StringSplitOptions.TrimEntries);
             var name = parts[0] != "broadcaster" ? parts[0].Substring(1) : parts[0];
 
-            var node = Network.ContainsKey(name) ? Network[name] : new PulseNode();
+            var node = Network.ContainsKey(name) ? Network[name] : new Module();
             node.Name = name;
-            node.Type = name=="broadcaster" ? NodeType.Broadcaster 
-                                            : parts[0].First() == '%' ? NodeType.FlipFlop                                                                                      
-                                                                      : NodeType.Conjunction;
-            node.ConnectionsOut = new(parts[1].Split(",", StringSplitOptions.TrimEntries).ToList());
-
+            node.Type = name=="broadcaster" ? ModuleType.Broadcaster 
+                                            : parts[0].First() == '%' ? ModuleType.FlipFlop                                                                                      
+                                                                      : ModuleType.Conjunction;
+            node.Sources = new(parts[1].Split(",", StringSplitOptions.TrimEntries).ToList());
             Network[name] = node;
         }
 
         public void ParseInput(List<string> lines)
             => lines.ForEach(ParseLine);
 
-        void InitIncomingConns()
+        void InitIncomingConns()    // Adds the list of nodes that feed the node in question
         {
             foreach (var conn in Network.Keys)
                 foreach (var from in Network.Keys)
-                    if (Network[from].ConnectionsOut.Contains(conn))
-                        Network[conn].ConnectionsIn[from] = PulseType.Low;
+                    if (Network[from].Sources.Contains(conn))
+                        Network[conn].Dests[from] = PulseType.Low;
         }
 
         void CompleteNodes()
         { 
-            var allNodes = Network.Values.SelectMany(x => x.ConnectionsOut).Distinct().ToList();
+            // Checks that any destination node exists as a node in our network
+            var allNodes = Network.Values.SelectMany(x => x.Sources).Distinct().ToList();
             foreach(var node in allNodes)
                 if(!Network.Keys.Contains(node))
                 {
-                    PulseNode newNode = new();
+                    Module newNode = new();
                     newNode.Name = node;
-                    newNode.Type = NodeType.Untyped;
+                    newNode.Type = ModuleType.Untyped;
                     Network[node] = newNode;
                 }
         }
 
-        long SendPulse()
+        long SendPulse(int part = 1)
         {
             CompleteNodes();
             InitIncomingConns();
             long countLo = 0; //Button
             long countHi = 0;
-            bool getIn = true;
+            long buttonPushes = 0;
 
-            for(int c=0;c<1000;c++)
+            // For part 2 - they are the modules that feed rm - which is the inversor that feeds rx
+            long dh = -1;
+            long qd = -1;
+            long bb = -1;
+            long dp = -1;
+
+            bool stop = false;
+            
+            while(!stop)
             {
-                getIn = false;
-                Queue<PulseToCheck> toCheck = new();
-                PulseToCheck start = new PulseToCheck() { name = "broadcaster", from = "button", type = PulseType.Low };
+                buttonPushes++;
+                Queue<Pulse> toCheck = new();
+                Pulse start = new Pulse() { Dest = "broadcaster", Source = "button", type = PulseType.Low };
                 toCheck.Enqueue(start);
 
                 while (toCheck.Count > 0)
                 {
-                    var current = toCheck.Dequeue();
-                    var pulse = Network[current.name];
-                    var incomingType = current.type;
+                    var currentPulse = toCheck.Dequeue();
+                    var module = Network[currentPulse.Dest];
+                    var incomingType = currentPulse.type;
 
-                  //  if (pulse.Type == NodeType.Untyped)
-                   //     continue;
+                    // Part 2
+                    if (module.Name == "rm")
+                    {
+                        // rm is the only one that activates rx
+                        if (module.Dests["dp"] == PulseType.High && dp == -1)
+                            dp = buttonPushes;
+                        if (module.Dests["qd"] == PulseType.High && qd == -1)
+                            qd = buttonPushes;
+                        if (module.Dests["bb"] == PulseType.High && bb == -1)
+                            bb = buttonPushes;
+                        if (module.Dests["dh"] == PulseType.High && dh == -1)
+                            dh = buttonPushes;
+                    }
 
+                    // Part 1
                     if (incomingType == PulseType.Low)
                         countLo++;
                     else
                         countHi++;
 
-                    if (pulse.Type == NodeType.FlipFlop)
+                    if (module.Type == ModuleType.FlipFlop)
                     {
                         if (incomingType == PulseType.High)
                             continue;
-                        pulse.isOn = !pulse.isOn;
-                        var outgoingType = pulse.isOn ? PulseType.High : PulseType.Low;
-                        foreach (var conn in pulse.ConnectionsOut)
-                        {
-                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = outgoingType });
-                            
-                        }
+                        module.isOn = !module.isOn;
+                        var outgoingType = module.isOn ? PulseType.High : PulseType.Low;
+                        foreach (var conn in module.Sources)
+                            toCheck.Enqueue(new Pulse() { Dest = conn, Source = currentPulse.Dest, type = outgoingType });
                     }
 
-                    if (pulse.Type == NodeType.Conjunction)
+                    if (module.Type == ModuleType.Conjunction)
                     {
-                        pulse.ConnectionsIn[current.from] = current.type;
+                        module.Dests[currentPulse.Source] = currentPulse.type;
                         PulseType toSend = PulseType.Low;
-                        if (pulse.ConnectionsIn.Values.Any(x => x == PulseType.Low))
+                        if (module.Dests.Values.Any(x => x == PulseType.Low))
                             toSend = PulseType.High;
-                        foreach (var conn in pulse.ConnectionsOut)
-                        {
-                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = toSend });
-                            
-                        }
+                        foreach (var conn in module.Sources)
+                            toCheck.Enqueue(new Pulse() { Dest = conn, Source = currentPulse.Dest, type = toSend });
                     }
 
-                    if (pulse.Type == NodeType.Broadcaster)
-                    {
-                        foreach (var conn in pulse.ConnectionsOut)
-                        {
-                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = current.type });
-                            
-                        }
-                    }
-
+                    if (module.Type == ModuleType.Broadcaster)
+                        foreach (var conn in module.Sources)
+                            toCheck.Enqueue(new Pulse() { Dest = conn, Source = currentPulse.Dest, type = currentPulse.type });
                 }
+                stop = part == 1 ? buttonPushes >= 1000 : !(dh == -1 || qd == -1 || bb == -1 || dp == -1);
             }
-            return countLo*countHi;
+            return part == 1 ? countLo*countHi : lcm(new List<long>() { dh, qd, bb, dp });
         }
 
         long gcd(long num1, long num2)
@@ -150,95 +158,7 @@
         long lcm(List<long> numbers)
             => numbers.Aggregate((long S, long val) => S * val / gcd(S, val));
 
-        long SendPulsePart2()
-        {
-            CompleteNodes();
-            InitIncomingConns();
-            long countLo = 0; //Button
-            long countHi = 0;
-            bool getIn = true;
-
-            long dh = -1;
-            long qd = -1;
-            long bb = -1;
-            long dp = -1;
-
-            long buttonPushes = 0;
-            while( dh == -1 || qd == -1 || bb == -1 || dp == -1)
-            {
-                getIn = false;
-                Queue<PulseToCheck> toCheck = new();
-                PulseToCheck start = new PulseToCheck() { name = "broadcaster", from = "button", type = PulseType.Low };
-                toCheck.Enqueue(start);
-                buttonPushes++;
-                while (toCheck.Count > 0)
-                {
-                    var current = toCheck.Dequeue();
-                    var pulse = Network[current.name];
-                    var incomingType = current.type;
-
-                    if (pulse.Name == "rm")
-                    {
-                        // rm is the only one that activates rz
-                        if (pulse.ConnectionsIn["dp"] == PulseType.High && dp == -1)
-                            dp = buttonPushes;
-                        if (pulse.ConnectionsIn["qd"] == PulseType.High && qd == -1)
-                            qd = buttonPushes;
-                        if (pulse.ConnectionsIn["bb"] == PulseType.High && bb == -1)
-                            bb = buttonPushes;
-                        if (pulse.ConnectionsIn["dh"] == PulseType.High && dh == -1)
-                            dh = buttonPushes;
-                    }
-
-                    //  if (pulse.Type == NodeType.Untyped)
-                    //     continue;
-
-                    if (incomingType == PulseType.Low)
-                        countLo++;
-                    else
-                        countHi++;
-
-                    if (pulse.Type == NodeType.FlipFlop)
-                    {
-                        if (incomingType == PulseType.High)
-                            continue;
-                        pulse.isOn = !pulse.isOn;
-                        var outgoingType = pulse.isOn ? PulseType.High : PulseType.Low;
-                        foreach (var conn in pulse.ConnectionsOut)
-                        {
-                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = outgoingType });
-
-                        }
-                    }
-
-                    if (pulse.Type == NodeType.Conjunction)
-                    {
-                        pulse.ConnectionsIn[current.from] = current.type;
-                        PulseType toSend = PulseType.Low;
-                        if (pulse.ConnectionsIn.Values.Any(x => x == PulseType.Low))
-                            toSend = PulseType.High;
-                        foreach (var conn in pulse.ConnectionsOut)
-                        {
-                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = toSend });
-
-                        }
-                    }
-
-                    if (pulse.Type == NodeType.Broadcaster)
-                    {
-                        foreach (var conn in pulse.ConnectionsOut)
-                        {
-                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = current.type });
-
-                        }
-                    }
-
-                }
-            }
-            return lcm(new List<long>() { dh, qd, bb, dp });
-        }
-
         public long Solve(int part)
-            => part == 1 ? SendPulse() : SendPulsePart2();
+            => SendPulse(part);
     }
 }
