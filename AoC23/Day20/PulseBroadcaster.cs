@@ -1,12 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace AoC23.Day20
+﻿namespace AoC23.Day20
 {
     enum NodeType
     { 
         Broadcaster, 
         FlipFlop, 
-        Conjunction
+        Conjunction, 
+        Untyped
     }
 
     enum PulseType
@@ -18,7 +17,7 @@ namespace AoC23.Day20
     class PulseNode
     {
         public string Name = "";
-        public NodeType Type = NodeType.Broadcaster;
+        public NodeType Type = NodeType.Untyped;
         public bool isOn = false;
         public PulseType recentPulse = PulseType.Low;
         public List<string> ConnectionsOut = new();
@@ -62,59 +61,89 @@ namespace AoC23.Day20
                         Network[conn].ConnectionsIn[from] = PulseType.Low;
         }
 
+        void CompleteNodes()
+        { 
+            var allNodes = Network.Values.SelectMany(x => x.ConnectionsOut).Distinct().ToList();
+            foreach(var node in allNodes)
+                if(!Network.Keys.Contains(node))
+                {
+                    PulseNode newNode = new();
+                    newNode.Name = node;
+                    newNode.Type = NodeType.Untyped;
+                    Network[node] = newNode;
+                }
+        }
+
+        bool CheckAnyOff()
+            => Network.Values.Any(n => n.isOn);
+
         long SendPulse()
         {
+            CompleteNodes();
             InitIncomingConns();
+            long countLo = 0; //Button
+            long countHi = 0;
+            bool getIn = true;
 
-            Queue<PulseToCheck> toCheck = new();
-            PulseToCheck start = new PulseToCheck() { name = "broadcaster", from="button", type = PulseType.Low };
-            toCheck.Enqueue(start);
-
-            long count = 1; //Button
-
-            while (toCheck.Count > 0)
+            for(int c=0;c<1000;c++)
             {
-                var current = toCheck.Dequeue();
-                var pulse = Network[current.name];
-                var incomingType = current.type;
+                getIn = false;
+                Queue<PulseToCheck> toCheck = new();
+                PulseToCheck start = new PulseToCheck() { name = "broadcaster", from = "button", type = PulseType.Low };
+                toCheck.Enqueue(start);
 
-                if (pulse.Type == NodeType.FlipFlop)
+                while (toCheck.Count > 0)
                 {
-                    if (incomingType == PulseType.High)
-                        continue;
-                    pulse.isOn = !pulse.isOn;
-                    var outgoingType = pulse.isOn ? PulseType.High : PulseType.Low;
-                    foreach (var conn in pulse.ConnectionsOut)
-                    {
-                        toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = outgoingType });
-                        count++;
-                    }
-                }
+                    var current = toCheck.Dequeue();
+                    var pulse = Network[current.name];
+                    var incomingType = current.type;
 
-                if (pulse.Type == NodeType.Conjunction)
-                {
-                    pulse.ConnectionsIn[current.from] = current.type;
-                    PulseType toSend = PulseType.Low;
-                    if (pulse.ConnectionsIn.Values.Any(x => x == PulseType.Low))
-                        toSend = PulseType.High;
-                    foreach (var conn in pulse.ConnectionsOut)
-                    {
-                        toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = toSend });
-                        count++;
-                    }
-                }
+                  //  if (pulse.Type == NodeType.Untyped)
+                   //     continue;
 
-                if (pulse.Type == NodeType.Broadcaster)
-                {
-                    foreach (var conn in pulse.ConnectionsOut)
-                    {
-                        toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = current.type });
-                        count++;
-                    }
-                }
+                    if (incomingType == PulseType.Low)
+                        countLo++;
+                    else
+                        countHi++;
 
+                    if (pulse.Type == NodeType.FlipFlop)
+                    {
+                        if (incomingType == PulseType.High)
+                            continue;
+                        pulse.isOn = !pulse.isOn;
+                        var outgoingType = pulse.isOn ? PulseType.High : PulseType.Low;
+                        foreach (var conn in pulse.ConnectionsOut)
+                        {
+                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = outgoingType });
+                            
+                        }
+                    }
+
+                    if (pulse.Type == NodeType.Conjunction)
+                    {
+                        pulse.ConnectionsIn[current.from] = current.type;
+                        PulseType toSend = PulseType.Low;
+                        if (pulse.ConnectionsIn.Values.Any(x => x == PulseType.Low))
+                            toSend = PulseType.High;
+                        foreach (var conn in pulse.ConnectionsOut)
+                        {
+                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = toSend });
+                            
+                        }
+                    }
+
+                    if (pulse.Type == NodeType.Broadcaster)
+                    {
+                        foreach (var conn in pulse.ConnectionsOut)
+                        {
+                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = current.type });
+                            
+                        }
+                    }
+
+                }
             }
-            return count;
+            return countLo*countHi;
         }
 
         public long Solve(int part)
