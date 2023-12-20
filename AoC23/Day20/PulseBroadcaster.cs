@@ -74,9 +74,6 @@
                 }
         }
 
-        bool CheckAnyOff()
-            => Network.Values.Any(n => n.isOn);
-
         long SendPulse()
         {
             CompleteNodes();
@@ -146,7 +143,102 @@
             return countLo*countHi;
         }
 
+        long gcd(long num1, long num2)
+           => (num2 == 0) ? num1 : gcd(num2, num1 % num2);
+
+        // Least Common Multiple
+        long lcm(List<long> numbers)
+            => numbers.Aggregate((long S, long val) => S * val / gcd(S, val));
+
+        long SendPulsePart2()
+        {
+            CompleteNodes();
+            InitIncomingConns();
+            long countLo = 0; //Button
+            long countHi = 0;
+            bool getIn = true;
+
+            long dh = -1;
+            long qd = -1;
+            long bb = -1;
+            long dp = -1;
+
+            long buttonPushes = 0;
+            while( dh == -1 || qd == -1 || bb == -1 || dp == -1)
+            {
+                getIn = false;
+                Queue<PulseToCheck> toCheck = new();
+                PulseToCheck start = new PulseToCheck() { name = "broadcaster", from = "button", type = PulseType.Low };
+                toCheck.Enqueue(start);
+                buttonPushes++;
+                while (toCheck.Count > 0)
+                {
+                    var current = toCheck.Dequeue();
+                    var pulse = Network[current.name];
+                    var incomingType = current.type;
+
+                    if (pulse.Name == "rm")
+                    {
+                        // rm is the only one that activates rz
+                        if (pulse.ConnectionsIn["dp"] == PulseType.High && dp == -1)
+                            dp = buttonPushes;
+                        if (pulse.ConnectionsIn["qd"] == PulseType.High && qd == -1)
+                            qd = buttonPushes;
+                        if (pulse.ConnectionsIn["bb"] == PulseType.High && bb == -1)
+                            bb = buttonPushes;
+                        if (pulse.ConnectionsIn["dh"] == PulseType.High && dh == -1)
+                            dh = buttonPushes;
+                    }
+
+                    //  if (pulse.Type == NodeType.Untyped)
+                    //     continue;
+
+                    if (incomingType == PulseType.Low)
+                        countLo++;
+                    else
+                        countHi++;
+
+                    if (pulse.Type == NodeType.FlipFlop)
+                    {
+                        if (incomingType == PulseType.High)
+                            continue;
+                        pulse.isOn = !pulse.isOn;
+                        var outgoingType = pulse.isOn ? PulseType.High : PulseType.Low;
+                        foreach (var conn in pulse.ConnectionsOut)
+                        {
+                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = outgoingType });
+
+                        }
+                    }
+
+                    if (pulse.Type == NodeType.Conjunction)
+                    {
+                        pulse.ConnectionsIn[current.from] = current.type;
+                        PulseType toSend = PulseType.Low;
+                        if (pulse.ConnectionsIn.Values.Any(x => x == PulseType.Low))
+                            toSend = PulseType.High;
+                        foreach (var conn in pulse.ConnectionsOut)
+                        {
+                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = toSend });
+
+                        }
+                    }
+
+                    if (pulse.Type == NodeType.Broadcaster)
+                    {
+                        foreach (var conn in pulse.ConnectionsOut)
+                        {
+                            toCheck.Enqueue(new PulseToCheck() { name = conn, from = current.name, type = current.type });
+
+                        }
+                    }
+
+                }
+            }
+            return lcm(new List<long>() { dh, qd, bb, dp });
+        }
+
         public long Solve(int part)
-            => SendPulse(); 
+            => part == 1 ? SendPulse() : SendPulsePart2();
     }
 }
