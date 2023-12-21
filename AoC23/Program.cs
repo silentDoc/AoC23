@@ -6,8 +6,8 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 20;
-            int part = 2;
+            int day = 21;
+            int part = 1;
             bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
@@ -218,6 +218,12 @@ namespace AoC23
             Day20.PulseBroadcaster pulser = new();
             pulser.ParseInput(lines);
             return pulser.Solve(part).ToString();
+        }
+
+        static string day21(string input, int part)
+        {
+            var lines = File.ReadAllLines(input).ToList();
+            return "";
         }
 
     }
