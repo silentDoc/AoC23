@@ -38,6 +38,7 @@ namespace AoC23
                 18 => day18(input, part),
                 19 => day19(input, part),
                 20 => day20(input, part),
+                21 => day21(input, part),
                 _ => throw new ArgumentException("Wrong day number - unimplemented")
             };
             
@@ -223,7 +224,10 @@ namespace AoC23
         static string day21(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
-            return "";
+            Day21.WalkingElf elf = new();
+            elf.ParseInput(lines);
+
+            return elf.Solve(part).ToString();
         }
 
     }
