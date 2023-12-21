@@ -227,6 +227,10 @@ namespace AoC23
             Day21.WalkingElf elf = new();
             elf.ParseInput(lines);
 
+            //Day21.WalkingElf2 elf2 = new();
+            
+            //elf2.Part2(lines);
+
             return elf.Solve(part).ToString();
         }
 
