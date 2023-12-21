@@ -117,22 +117,29 @@ namespace AoC23.Day21
             }
 
             // ax^2 + bx + c ==> Solving formula
-            // c = spots[0]
+            // VALUE : c = spots[0]
             // a*1 + b*1 + c = spots[1]  ( X = 1)
-            // a*2^2 + b*2 + c = spots[2]  ( X = 2)
+            // VALUE : a + b = spots[1] - c     - AplusB
 
-            long c = spots[0];
-            long aPlusB = spots[1] - c;
-            long fourAPlusTwoB = spots[2] - c;
-            long twoA = fourAPlusTwoB - (2 * aPlusB);
-            long a = twoA / 2;
-            long b = aPlusB - a;
+            // a*2^2 + b*2 + c = spots[2]  ( X = 2)
+            // VALUE : 4a + 2b = spots[2] - c   - _4A2B
+            // 2a = 4a +2b - 2*(a+b)
+            // VALUE : 2a = 4a + 2b - 2a - 2b   - _TWOA
+            // A =_TWOA / 2
+            // a + b = spots[1] - c
+
+            long C = spots[0];
+            long AplusB = spots[1] - C;
+            long _4A2B = spots[2] - C;
+            long _2A = _4A2B - (2 * AplusB);
+            long A = _2A / 2;
+            long B = AplusB - A;
 
             long x2 = numGrids * numGrids;
-            long ax2 = a * x2;
-            long bx = b * numGrids;
+            long AX2 = A * x2;
+            long BX = B * numGrids;
 
-            return ax2 + bx + c;
+            return AX2 + BX + C;
         }
 
 
