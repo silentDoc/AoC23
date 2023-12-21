@@ -29,10 +29,7 @@ namespace AoC23.Day21
 
         int TraverseMaps(int maxSteps, Coord2D start, int part =1)
         {
-            Queue<Coord2D> active = new();
-            active.Enqueue(start);
             HashSet<Coord2D> currentSet = new() { start};
-
             for (int steps = 0; steps < maxSteps; steps++)
             {
                 var nextSet = new HashSet<Coord2D>();
