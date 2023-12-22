@@ -1,6 +1,4 @@
-﻿using AoC23.Common;
-
-namespace AoC23.Day22
+﻿namespace AoC23.Day22
 {
     record SandBrick(int x1, int y1, int z1, int x2, int y2, int z2)
     {
@@ -36,11 +34,8 @@ namespace AoC23.Day22
 
                 while (z > 0)
                 {
-                    var supportingBricks = Bricks.Where(b =>
-                            b.z2 == z - 1 &&
-                            brick.Xs.Intersect(b.Xs).Any() &&
-                            brick.Ys.Intersect(b.Ys).Any())
-                        .ToList();
+                    var supportingBricks = Bricks.Where(b =>  b.z2 == z - 1 &&  brick.Xs.Intersect(b.Xs).Any() &&  brick.Ys.Intersect(b.Ys).Any())
+                                                 .ToList();
 
                     if (supportingBricks.Count > 0 || z == 1)
                     {
@@ -60,8 +55,37 @@ namespace AoC23.Day22
             return Bricks.Count(b => b.Above.All(a => a.Below.Count > 1));
         }
 
+        private int ChainReaction()
+        {
+            Drop();
+            // Some kind of BFS
+            int count = 0;
+            foreach (var brick in Bricks)
+            {
+                var queue = new Queue<SandBrick>();
+                queue.Enqueue(brick);
+                var disintegrated = new HashSet<SandBrick>();
+
+                while (queue.TryDequeue(out var currentBrick))
+                {
+                    disintegrated.Add(currentBrick);
+
+                    // Count all bricks that are supported by the current brick and have all their supporters
+                    // disintegrated, and enqueue them to be processed.
+                    foreach (var above in currentBrick.Above.Where(above => above.Below.All(disintegrated.Contains)))
+                    {
+                        count++;
+                        queue.Enqueue(above);
+                    }
+                }
+            }
+            return count;
+
+        }
+
+
         public int Solve(int part = 1)
-            => Drop();
+            => part == 1 ? Drop() : ChainReaction();
     }
 }
 
