@@ -234,6 +234,7 @@ namespace AoC23
         {
             var lines = File.ReadAllLines(input).ToList();
             Day22.SandBlockout blockout = new();
+            //Day22.Bricker blockout = new();
             blockout.ParseInput(lines);
            
             return blockout.Solve(part).ToString();
