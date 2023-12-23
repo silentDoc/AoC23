@@ -8,7 +8,7 @@ namespace AoC23
         {
             int day = 23;
             int part = 1;
-            bool test = !false;
+            bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -243,8 +243,10 @@ namespace AoC23
         static string day23(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
+            Day23.HikingElf elf = new();
+            elf.ParseInput(lines);
 
-            return "";
+            return elf.Solve(part).ToString();
         }
 
 
