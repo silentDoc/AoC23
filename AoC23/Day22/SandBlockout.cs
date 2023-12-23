@@ -83,7 +83,6 @@
 
         }
 
-
         public int Solve(int part = 1)
             => part == 1 ? Drop() : ChainReaction();
     }

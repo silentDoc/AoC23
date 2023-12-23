@@ -6,9 +6,9 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 22;
-            int part = 2;
-            bool test = false;
+            int day = 23;
+            int part = 1;
+            bool test = !false;
 
             string input = "./Input/day" + day.ToString("00");
             input += (test) ? "_test.txt" : ".txt";
@@ -40,6 +40,7 @@ namespace AoC23
                 20 => day20(input, part),
                 21 => day21(input, part),
                 22 => day22(input, part),
+                23 => day23(input, part),
                 _ => throw new ArgumentException("Wrong day number - unimplemented")
             };
             
@@ -234,11 +235,18 @@ namespace AoC23
         {
             var lines = File.ReadAllLines(input).ToList();
             Day22.SandBlockout blockout = new();
-            //Day22.Bricker blockout = new();
             blockout.ParseInput(lines);
            
             return blockout.Solve(part).ToString();
         }
+
+        static string day23(string input, int part)
+        {
+            var lines = File.ReadAllLines(input).ToList();
+
+            return "";
+        }
+
 
     }
 }
