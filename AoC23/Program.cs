@@ -41,6 +41,7 @@ namespace AoC23
                 21 => day21(input, part),
                 22 => day22(input, part),
                 23 => day23(input, part),
+                24 => day24(input, part),
                 _ => throw new ArgumentException("Wrong day number - unimplemented")
             };
             
@@ -249,6 +250,11 @@ namespace AoC23
             return elf.Solve(part).ToString();
         }
 
+        static string day24(string input, int part)
+        {
+            var lines = File.ReadAllLines(input).ToList();
+            return "";
+        }
 
     }
 }
