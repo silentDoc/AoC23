@@ -73,6 +73,8 @@ namespace AoC23.Day24
             return count;
         }
 
+
+
         public int Solve(int part = 1)
             => FindCrossings();
     }

@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Z3" Version="4.12.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Input\day24_test.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
