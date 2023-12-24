@@ -1,4 +1,5 @@
 ﻿using AoC23.Common;
+using Microsoft.Z3;
 
 namespace AoC23.Day24
 {
@@ -61,7 +62,7 @@ namespace AoC23.Day24
             return isFutureX0 && isFutureY0 && isFutureX1 && isFutureY1;
         }
 
-
+        // Part 1
         int FindCrossings()
         {
             int count = 0;
@@ -73,9 +74,63 @@ namespace AoC23.Day24
             return count;
         }
 
+        // Part 2 - Advent of code 2018 Day 23 was super helpful for this one
+        // Constraint Programming :)
 
+        // Helpers to get the solver Equations
+        BoolExpr CrossingEquation(ArithExpr p, ArithExpr v, ArithExpr t, long hp, long hv, Context ctx)
+        {
+            // x + vx * t == px + pvx * t
+            // y + vy * t == py + pvy * t  -- etc ...
 
-        public int Solve(int part = 1)
-            => FindCrossings();
+            ArithExpr MulLeft = ctx.MkMul(v, t);
+            ArithExpr left = ctx.MkAdd(p, MulLeft);
+            ArithExpr MulRight = ctx.MkMul(ctx.MkInt(hv), t);
+            ArithExpr right = ctx.MkAdd(ctx.MkInt(hp), MulRight);
+
+            return ctx.MkEq(left, right);
+        }
+
+        private long SolvePart2()
+        {
+            Context ctx = new Context();
+            ArithExpr x = ctx.MkIntConst("x");
+            ArithExpr y = ctx.MkIntConst("y");
+            ArithExpr z = ctx.MkIntConst("z");
+
+            ArithExpr vx = ctx.MkIntConst("vx");
+            ArithExpr vy = ctx.MkIntConst("vy");
+            ArithExpr vz = ctx.MkIntConst("vz");
+
+            Solver solver = ctx.MkSolver();
+
+            for (int i = 0; i < Stones.Count; i++)
+            {
+                var (hpx, hpy, hpz) = Stones[i].position;
+                var (hvx, hvy, hvz) = Stones[i].velocity;
+
+                ArithExpr t = ctx.MkIntConst("t_"+i);
+                solver.Add(ctx.MkGe(t, ctx.MkInt(0)));      // t >=0
+                solver.Add(CrossingEquation(x, vx, t, hpx, hvx, ctx));  // x + vx * t == px + pvx * t
+                solver.Add(CrossingEquation(y, vy, t, hpy, hvy, ctx));  // y + vy * t == py + pvy * t
+                solver.Add(CrossingEquation(z, vz, t, hpz, hvz, ctx));  // z + vz * t == pz + pvz * t
+            }
+
+            var status = solver.Check();
+            var model = solver.Model;
+
+            var resX = model.Evaluate(x);
+            var resY = model.Evaluate(y);
+            var resZ = model.Evaluate(z);
+
+            long xx = long.Parse(resX.ToString());
+            long yy = long.Parse(resY.ToString());
+            long zz = long.Parse(resZ.ToString());
+
+            return xx + yy + zz;
+        }
+
+        public long Solve(int part = 1)
+            => part == 1 ? FindCrossings() : SolvePart2();
     }
 }
