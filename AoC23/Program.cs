@@ -6,8 +6,8 @@ namespace AoC23
     {
         static void Main(string[] args)
         {
-            int day = 23;
-            int part = 2;
+            int day = 24;
+            int part = 1;
             bool test = false;
 
             string input = "./Input/day" + day.ToString("00");
@@ -253,7 +253,9 @@ namespace AoC23
         static string day24(string input, int part)
         {
             var lines = File.ReadAllLines(input).ToList();
-            return "";
+            Day24.StoneSystem system = new();
+            system.ParseInput(lines);
+            return system.Solve(part).ToString();
         }
 
     }
